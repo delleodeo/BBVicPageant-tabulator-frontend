@@ -1,0 +1,144 @@
+<template>
+  <header class="topbar">
+    <div class="topbar-title-wrap">
+      <p class="eyebrow">
+        <span class="pulse-dot"></span>
+        {{ roleLabel }}
+      </p>
+      <h1>{{ title }}</h1>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Stage Mode link for quick presentation on projector/TV -->
+      <RouterLink to="/stage" target="_blank" class="btn btn-gold btn-sm" title="Open Stage Presentation Mode">
+        <span>👑</span> Stage Mode
+      </RouterLink>
+
+      <!-- Theme Switcher -->
+      <button type="button" class="btn btn-ghost btn-icon btn-sm" :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'" @click="toggleTheme">
+        <span>{{ isDark ? '☀️' : '🌙' }}</span>
+      </button>
+
+      <!-- User Profile Info -->
+      <div class="user-chip">
+        <span class="user-avatar">{{ avatarText }}</span>
+        <div class="user-info-text">
+          <span class="user-display-name">{{ displayName }}</span>
+          <span class="user-role-tag">{{ roleTag }}</span>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost btn-sm" type="button" @click="logout">
+        Logout
+      </button>
+    </div>
+  </header>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth.js';
+
+defineProps({
+  title: { type: String, required: true }
+});
+
+const auth = useAuthStore();
+const router = useRouter();
+const isDark = ref(false);
+
+onMounted(() => {
+  const saved = localStorage.getItem('pageant_theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDark.value = true;
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+});
+
+function toggleTheme() {
+  isDark.value = !isDark.value;
+  if (isDark.value) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('pageant_theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('pageant_theme', 'light');
+  }
+}
+
+const roleLabel = computed(() => {
+  if (auth.isAdmin) return 'Executive Tabulation Control';
+  return `${auth.judge?.designation || 'Official Pageant Judge'} (${auth.judge?.judgeId})`;
+});
+
+const displayName = computed(() => {
+  if (auth.isAdmin) return auth.user?.username || 'Administrator';
+  return auth.judge?.name || 'Judge';
+});
+
+const roleTag = computed(() => {
+  if (auth.isAdmin) return 'Admin';
+  return auth.judge?.judgeId || 'Judge';
+});
+
+const avatarText = computed(() => {
+  if (auth.isAdmin) return 'AD';
+  return auth.judge?.judgeId || 'J';
+});
+
+function logout() {
+  auth.logout();
+  router.push('/login');
+}
+</script>
+
+<style scoped>
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--gold-light);
+  font-size: 0.75rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-display-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.user-role-tag {
+  font-size: 0.65rem;
+  color: var(--gold-dark);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+</style>
