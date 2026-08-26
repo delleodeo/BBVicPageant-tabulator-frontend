@@ -46,7 +46,7 @@
       <section class="panel panel-gold candidate-scoring-header">
         <div class="candidate-header-left">
           <div class="header-photo-wrap" @click="showBioModal = true">
-            <img v-if="finalist.contestantId.photo" :src="finalist.contestantId.photo" :alt="finalist.contestantId.name" />
+            <img v-if="finalist.contestantId.photo" :src="mediaUrl(finalist.contestantId.photo)" :alt="finalist.contestantId.name" />
             <div v-else class="header-photo-fallback">
               {{ finalist.contestantId.name.slice(0, 2).toUpperCase() }}
             </div>
@@ -176,7 +176,7 @@ import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import Toast from '../../components/Toast.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
-import { api } from '../../services/api.js';
+import { api, mediaUrl } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
 import { fmt } from '../../utils/score.js';
 

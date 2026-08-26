@@ -18,7 +18,7 @@
       <div class="bio-modal-body">
         <div class="bio-photo-col">
           <div class="photo-frame-lg">
-            <img v-if="contestant?.photo" :src="contestant.photo" :alt="contestant?.name" />
+            <img v-if="contestant?.photo" :src="mediaUrl(contestant.photo)" :alt="contestant?.name" />
             <div v-else class="photo-fallback">
               <span>{{ contestant?.name?.slice(0, 2).toUpperCase() }}</span>
               <small>#{{ contestant?.contestantNumber }}</small>
@@ -65,6 +65,7 @@
 
 <script setup>
 import AppIcon from './AppIcon.vue';
+import { mediaUrl } from '../services/api.js';
 
 defineEmits(['close']);
 defineProps({

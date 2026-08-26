@@ -4,7 +4,7 @@ let socket;
 
 export function getSocket() {
   if (!socket) {
-    socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+    socket = io(import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? 'http://localhost:5000' : window.location.origin), {
       autoConnect: false,
       auth: {
         token: localStorage.getItem('token')
@@ -29,4 +29,3 @@ export function disconnectSocket() {
     socket.disconnect();
   }
 }
-

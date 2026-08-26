@@ -84,7 +84,7 @@
       <article v-for="c in filteredContestants" :key="c._id" class="entity-card">
         <div class="contestant-card-top">
           <div class="admin-candidate-photo">
-            <img v-if="c.photo" :src="c.photo" :alt="c.name" />
+            <img v-if="c.photo" :src="mediaUrl(c.photo)" :alt="c.name" />
             <span v-else>{{ c.name.slice(0, 2).toUpperCase() }}</span>
           </div>
 
@@ -136,7 +136,7 @@
             <td><strong>#{{ c.contestantNumber }}</strong></td>
             <td>
               <div class="photo-frame small" style="width: 38px; height: 38px;">
-                <img v-if="c.photo" :src="c.photo" :alt="c.name" />
+                <img v-if="c.photo" :src="mediaUrl(c.photo)" :alt="c.name" />
                 <span v-else>{{ c.name.slice(0, 2).toUpperCase() }}</span>
               </div>
             </td>
@@ -225,7 +225,7 @@
 
           <div v-if="form.photo || photoUpload.uploading || photoUpload.error" class="photo-upload-preview">
             <div class="photo-frame small">
-              <img v-if="form.photo" :src="form.photo" alt="Candidate photo preview" />
+              <img v-if="form.photo" :src="mediaUrl(form.photo)" alt="Candidate photo preview" />
               <AppIcon v-else name="contestants" />
             </div>
             <div>
@@ -293,7 +293,7 @@ import EmptyState from '../../components/EmptyState.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
-import { api } from '../../services/api.js';
+import { api, mediaUrl } from '../../services/api.js';
 
 const contestants = ref([]);
 const loading = ref(true);
@@ -378,7 +378,7 @@ async function handlePhotoFileChange(event) {
     payload.append('image', file);
 
     const { data } = await api.post('/uploads/contestant-photo', payload);
-    form.photo = data.url;
+    form.photo = data.path || data.url;
   } catch (err) {
     photoUpload.error = err.response?.data?.message || 'Unable to upload image.';
   } finally {

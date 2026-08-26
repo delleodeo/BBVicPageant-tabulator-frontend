@@ -46,7 +46,7 @@
 
             <div v-if="award.winner" class="award-winner-block">
               <div class="award-winner-avatar">
-                <img v-if="award.winner.photo" :src="award.winner.photo" :alt="award.winner.name" />
+                <img v-if="award.winner.photo" :src="mediaUrl(award.winner.photo)" :alt="award.winner.name" />
                 <span v-else>{{ award.winner.name.slice(0, 2).toUpperCase() }}</span>
               </div>
 
@@ -101,7 +101,7 @@
 
             <div v-if="award.winnerDetails || award.winnerContestantId" class="award-winner-block">
               <div class="award-winner-avatar">
-                <img v-if="award.winnerContestantId?.photo" :src="award.winnerContestantId.photo" :alt="award.winnerContestantId.name" />
+                <img v-if="award.winnerContestantId?.photo" :src="mediaUrl(award.winnerContestantId.photo)" :alt="award.winnerContestantId.name" />
                 <span v-else>{{ (award.winnerDetails?.name || award.winnerContestantId?.name || 'W').slice(0, 2).toUpperCase() }}</span>
               </div>
 
@@ -184,7 +184,7 @@ import { onMounted, reactive, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
-import { api } from '../../services/api.js';
+import { api, mediaUrl } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
 
 const loading = ref(true);

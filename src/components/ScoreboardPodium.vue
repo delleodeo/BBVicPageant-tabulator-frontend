@@ -15,7 +15,7 @@
         <div class="candidate-avatar">
           <div class="avatar-ring silver">
             <span class="rank-crown"><AppIcon name="awards" /></span>
-            <img v-if="items[1].contestant?.photo" :src="items[1].contestant.photo" :alt="items[1].contestant.name" />
+            <img v-if="items[1].contestant?.photo" :src="mediaUrl(items[1].contestant.photo)" :alt="items[1].contestant.name" />
             <span v-else class="avatar-initials">{{ items[1].contestant?.name?.slice(0, 2) }}</span>
           </div>
         </div>
@@ -34,7 +34,7 @@
         <div class="candidate-avatar">
           <div class="avatar-ring gold">
             <span class="rank-crown"><AppIcon name="finalists" /></span>
-            <img v-if="items[0].contestant?.photo" :src="items[0].contestant.photo" :alt="items[0].contestant.name" />
+            <img v-if="items[0].contestant?.photo" :src="mediaUrl(items[0].contestant.photo)" :alt="items[0].contestant.name" />
             <span v-else class="avatar-initials">{{ items[0].contestant?.name?.slice(0, 2) }}</span>
           </div>
         </div>
@@ -53,7 +53,7 @@
         <div class="candidate-avatar">
           <div class="avatar-ring bronze">
             <span class="rank-crown"><AppIcon name="awards" /></span>
-            <img v-if="items[2].contestant?.photo" :src="items[2].contestant.photo" :alt="items[2].contestant.name" />
+            <img v-if="items[2].contestant?.photo" :src="mediaUrl(items[2].contestant.photo)" :alt="items[2].contestant.name" />
             <span v-else class="avatar-initials">{{ items[2].contestant?.name?.slice(0, 2) }}</span>
           </div>
         </div>
@@ -82,6 +82,7 @@
 
 <script setup>
 import AppIcon from './AppIcon.vue';
+import { mediaUrl } from '../services/api.js';
 import { fmt } from '../utils/score.js';
 
 defineProps({

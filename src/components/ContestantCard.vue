@@ -5,7 +5,7 @@
     </div>
 
     <div class="photo-frame">
-      <img v-if="contestant?.photo" :src="contestant.photo" :alt="contestant.name" />
+      <img v-if="contestant?.photo" :src="mediaUrl(contestant.photo)" :alt="contestant.name" />
       <div v-else class="photo-fallback">
         <span>{{ initials }}</span>
         <small>#{{ contestant?.contestantNumber }}</small>
@@ -30,6 +30,7 @@
 <script setup>
 import { computed } from 'vue';
 import AppIcon from './AppIcon.vue';
+import { mediaUrl } from '../services/api.js';
 
 const props = defineProps({
   contestant: { type: Object, required: true },

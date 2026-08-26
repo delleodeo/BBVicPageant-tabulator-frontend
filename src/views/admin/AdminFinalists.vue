@@ -31,7 +31,7 @@
         </div>
 
         <div class="photo-frame">
-          <img v-if="finalist.contestantId?.photo" :src="finalist.contestantId.photo" :alt="finalist.contestantId.name" />
+          <img v-if="finalist.contestantId?.photo" :src="mediaUrl(finalist.contestantId.photo)" :alt="finalist.contestantId.name" />
           <div v-else class="photo-fallback">
             <span>{{ finalist.contestantId?.name?.slice(0, 2).toUpperCase() }}</span>
             <small>#{{ finalist.contestantId?.contestantNumber }}</small>
@@ -67,7 +67,7 @@ import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
-import { api } from '../../services/api.js';
+import { api, mediaUrl } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
 
 const finalists = ref([]);

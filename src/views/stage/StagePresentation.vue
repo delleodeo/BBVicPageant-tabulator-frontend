@@ -40,7 +40,7 @@
     <section v-if="currentMode === 'SHOWCASE'" class="stage-mode-section">
       <div class="showcase-candidate-card" v-if="activeContestant">
         <div class="showcase-photo-frame">
-          <img v-if="activeContestant.photo" :src="activeContestant.photo" :alt="activeContestant.name" />
+          <img v-if="activeContestant.photo" :src="mediaUrl(activeContestant.photo)" :alt="activeContestant.name" />
           <div v-else class="showcase-fallback">
             <span>{{ activeContestant.name.slice(0, 2).toUpperCase() }}</span>
             <small>#{{ activeContestant.contestantNumber }}</small>
@@ -103,7 +103,7 @@
 
             <div class="card-back">
               <div class="reveal-photo">
-                <img v-if="finalist.contestantId?.photo" :src="finalist.contestantId.photo" :alt="finalist.contestantId.name" />
+                <img v-if="finalist.contestantId?.photo" :src="mediaUrl(finalist.contestantId.photo)" :alt="finalist.contestantId.name" />
                 <span v-else>{{ finalist.contestantId?.name?.slice(0, 2).toUpperCase() }}</span>
               </div>
               <span class="finalist-candidate-num">#{{ finalist.contestantId?.contestantNumber }}</span>
@@ -198,7 +198,7 @@
           </div>
           <div class="title-candidate-info grand-info" v-if="getWinnerByRank(1)">
             <div class="grand-photo-ring">
-              <img v-if="getWinnerByRank(1)?.contestant?.photo" :src="getWinnerByRank(1)?.contestant?.photo" :alt="getWinnerByRank(1)?.contestant?.name" />
+              <img v-if="getWinnerByRank(1)?.contestant?.photo" :src="mediaUrl(getWinnerByRank(1)?.contestant?.photo)" :alt="getWinnerByRank(1)?.contestant?.name" />
               <span v-else>{{ getWinnerByRank(1)?.contestant?.name?.slice(0, 2).toUpperCase() }}</span>
             </div>
             <div>
@@ -259,7 +259,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import confetti from 'canvas-confetti';
-import { api } from '../../services/api.js';
+import { api, mediaUrl } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
 import { fmt } from '../../utils/score.js';
 
@@ -903,4 +903,3 @@ onMounted(() => {
   }
 }
 </style>
-
