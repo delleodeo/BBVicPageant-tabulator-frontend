@@ -22,7 +22,9 @@
     <div class="score-card-footer">
       <div class="score-status-row">
         <span class="status-indicator" :class="{ saved: isSaved, unsaved: isDirty }">
-          {{ isDirty ? '● Unsaved changes' : isSaved ? '✓ Score recorded' : 'Pending rating' }}
+          <AppIcon v-if="isSaved" name="check" />
+          <span v-else-if="isDirty" class="status-dot"></span>
+          {{ isDirty ? 'Unsaved changes' : isSaved ? 'Score recorded' : 'Pending rating' }}
         </span>
       </div>
 
@@ -32,9 +34,12 @@
         :disabled="disabled || saving || !isDirty"
         @click="save"
       >
+        <AppIcon :name="isSaved && !isDirty ? 'check' : 'scoreSheet'" />
         <span v-if="saving">Saving...</span>
+        <span v-else-if="disabled">Scoring Locked</span>
         <span v-else-if="isDirty">Save {{ category.label }} Score</span>
-        <span v-else>Saved ({{ localValue }})</span>
+        <span v-else-if="isSaved">Saved ({{ Number(localValue).toFixed(1) }})</span>
+        <span v-else>Choose Score</span>
       </button>
     </div>
   </article>
@@ -42,6 +47,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+import AppIcon from './AppIcon.vue';
 import QuickScoreDial from './QuickScoreDial.vue';
 import { validScore } from '../utils/score.js';
 
@@ -105,6 +111,23 @@ async function save() {
   border-color: var(--border-gold);
 }
 
+.score-card-header {
+  gap: 0.75rem;
+}
+
+.score-card-title {
+  font-size: clamp(1rem, 4.5vw, 1.15rem);
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.score-card-weight {
+  display: inline-flex;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
 .weighted-points-badge {
   display: flex;
   align-items: baseline;
@@ -112,17 +135,19 @@ async function save() {
   background: linear-gradient(135deg, var(--gold-soft), var(--surface-hover));
   border: 1px solid var(--gold);
   color: var(--gold-dark);
-  padding: 0.25rem 0.65rem;
+  padding: 0.32rem 0.55rem;
   border-radius: var(--radius-md);
+  white-space: nowrap;
 }
 
 .pts-val {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 4.4vw, 1.15rem);
   font-weight: 900;
+  line-height: 1;
 }
 
 .pts-label {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -140,9 +165,17 @@ async function save() {
 }
 
 .status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
+}
+
+.status-indicator .app-icon {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .status-indicator.saved {
@@ -151,5 +184,10 @@ async function save() {
 
 .status-indicator.unsaved {
   color: var(--warning);
+}
+
+.score-card .btn .app-icon {
+  width: 1rem;
+  height: 1rem;
 }
 </style>

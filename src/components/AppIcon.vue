@@ -1,0 +1,106 @@
+<template>
+  <component :is="iconComponent" class="app-icon" aria-hidden="true" />
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import {
+  ArrowDownTrayIcon,
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  ArrowRightIcon,
+  ArrowRightOnRectangleIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowUpTrayIcon,
+  BoltIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  HomeIcon,
+  IdentificationIcon,
+  KeyIcon,
+  LockClosedIcon,
+  LockOpenIcon,
+  MapPinIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  PresentationChartBarIcon,
+  PrinterIcon,
+  PlusIcon,
+  PencilSquareIcon,
+  ScaleIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  StarIcon,
+  SunIcon,
+  TableCellsIcon,
+  TrashIcon,
+  TrophyIcon,
+  UserCircleIcon,
+  UserGroupIcon,
+  UserIcon,
+  UsersIcon,
+  XMarkIcon
+} from '@heroicons/vue/24/outline';
+
+const props = defineProps({
+  name: { type: String, default: 'sparkles' }
+});
+
+const icons = {
+  admin: ShieldCheckIcon,
+  arrowDownTray: ArrowDownTrayIcon,
+  arrowLeft: ArrowLeftIcon,
+  arrowPath: ArrowPathIcon,
+  arrowRight: ArrowRightIcon,
+  arrowRightOnRectangle: ArrowRightOnRectangleIcon,
+  arrowTopRight: ArrowTopRightOnSquareIcon,
+  arrowUpTray: ArrowUpTrayIcon,
+  awards: TrophyIcon,
+  bolt: BoltIcon,
+  chart: ChartBarIcon,
+  check: CheckCircleIcon,
+  contestants: UsersIcon,
+  dashboard: HomeIcon,
+  document: DocumentTextIcon,
+  eye: EyeIcon,
+  eyeSlash: EyeSlashIcon,
+  finalists: SparklesIcon,
+  finalRound: TrophyIcon,
+  judge: ScaleIcon,
+  judges: UserGroupIcon,
+  key: KeyIcon,
+  lock: LockClosedIcon,
+  lockOpen: LockOpenIcon,
+  logs: ClipboardDocumentListIcon,
+  mapPin: MapPinIcon,
+  search: MagnifyingGlassIcon,
+  matrix: BoltIcon,
+  moon: MoonIcon,
+  profile: UserCircleIcon,
+  pencil: PencilSquareIcon,
+  plus: PlusIcon,
+  printer: PrinterIcon,
+  roundOne: StarIcon,
+  scoreSheet: ClipboardDocumentCheckIcon,
+  settings: Cog6ToothIcon,
+  shieldCheck: ShieldCheckIcon,
+  sparkles: SparklesIcon,
+  stage: PresentationChartBarIcon,
+  sun: SunIcon,
+  table: TableCellsIcon,
+  trash: TrashIcon,
+  user: UserIcon,
+  userId: IdentificationIcon,
+  warning: ExclamationTriangleIcon,
+  xMark: XMarkIcon
+};
+
+const iconComponent = computed(() => icons[props.name] || SparklesIcon);
+</script>

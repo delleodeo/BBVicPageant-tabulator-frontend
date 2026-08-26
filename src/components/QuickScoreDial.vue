@@ -22,6 +22,19 @@
       </div>
     </div>
 
+    <label class="score-range-control">
+      <span>Score range: 0.0 - 10.0</span>
+      <input
+        :value="currentNum ?? 0"
+        type="range"
+        min="0"
+        max="10"
+        step="0.1"
+        :disabled="disabled"
+        @input="setScore(Number($event.target.value))"
+      />
+    </label>
+
     <!-- Stepper & Quick Adjustment Controls -->
     <div class="dial-controls">
       <button
@@ -65,7 +78,7 @@
       </button>
     </div>
 
-    <!-- Quick Preset Chips -->
+    <!-- Whole-point anchors; decimal scores are available through the slider, input, and steppers. -->
     <div class="preset-chips">
       <button
         v-for="preset in presets"
@@ -91,7 +104,7 @@ const props = defineProps({
   disabled: { type: Boolean, default: false }
 });
 
-const presets = [7.5, 8.0, 8.5, 8.8, 9.0, 9.2, 9.5, 9.8, 10.0];
+const presets = Array.from({ length: 11 }, (_item, index) => index);
 
 const currentNum = computed(() => {
   const val = Number(props.modelValue);
@@ -139,26 +152,27 @@ function setScore(score) {
 .quick-score-dial {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .dial-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .score-display {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.35rem;
 }
 
 .dial-numeric-input {
-  width: 100px;
-  height: 52px;
-  font-size: 1.8rem;
+  width: 88px;
+  height: 46px;
+  font-size: clamp(1.35rem, 7vw, 1.7rem);
   font-weight: 900;
   text-align: center;
   background: var(--surface-hover);
@@ -175,18 +189,40 @@ function setScore(score) {
 }
 
 .max-denom {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: clamp(0.78rem, 3.8vw, 0.9rem);
+  font-weight: 800;
   color: var(--text-muted);
 }
 
-.rating-badge-pill {
-  font-size: 0.72rem;
+.score-range-control {
+  display: grid;
+  gap: 0.4rem;
+  font-size: clamp(0.66rem, 3vw, 0.72rem);
   font-weight: 800;
-  padding: 0.25rem 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.score-range-control input[type='range'] {
+  width: 100%;
+  padding: 0;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.score-range-control input[type='range']:disabled {
+  cursor: not-allowed;
+}
+
+.rating-badge-pill {
+  max-width: 160px;
+  font-size: clamp(0.62rem, 3vw, 0.7rem);
+  line-height: 1.2;
+  font-weight: 800;
+  padding: 0.32rem 0.6rem;
   border-radius: var(--radius-full);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .rating-badge-pill.gold { background: var(--gold-soft); color: var(--gold-dark); border: 1px solid var(--gold); }
@@ -202,12 +238,12 @@ function setScore(score) {
 }
 
 .step-btn {
-  height: 36px;
+  height: 34px;
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-weight: 800;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   cursor: pointer;
   transition: all 120ms ease;
 }
@@ -219,19 +255,18 @@ function setScore(score) {
 }
 
 .preset-chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.35rem;
 }
 
 .preset-chip {
-  flex: 1;
-  min-width: 44px;
+  min-width: 0;
   padding: 0.35rem 0.4rem;
   border-radius: var(--radius-sm);
   background: var(--surface);
   border: 1px solid var(--border);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-main);
   cursor: pointer;
@@ -251,5 +286,10 @@ function setScore(score) {
   border-color: var(--gold-dark);
   font-weight: 900;
 }
-</style>
 
+@media (min-width: 520px) {
+  .preset-chips {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+</style>

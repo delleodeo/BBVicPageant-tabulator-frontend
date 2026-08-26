@@ -13,7 +13,10 @@
       <ProgressBar :value="progress" />
       <div class="progress-details-row">
         <span>Scoring Progress: <strong>{{ completeCount }} of {{ finalists.length }} Finalists Completed</strong></span>
-        <span v-if="finalists.length && completeCount === finalists.length" class="all-done-tag">🎉 All Finalists Graded!</span>
+        <span v-if="finalists.length && completeCount === finalists.length" class="all-done-tag">
+          <AppIcon name="check" />
+          All Finalists Graded
+        </span>
       </div>
     </section>
 
@@ -26,11 +29,17 @@
         :contestant="finalist.contestantId"
         :to="`/judge/final/${finalist.contestantId._id}`"
       >
-        <div class="card-score-summary">
-          <span class="score-ratio">R1: {{ roundOneTotal(finalist.contestantId._id) }}</span>
-          <span v-if="getFinalScore(finalist.contestantId._id) !== null" class="score-val">
-            Final: {{ getFinalScore(finalist.contestantId._id) }} pts
-          </span>
+        <div class="judge-card-score">
+          <div class="card-score-summary">
+            <span class="score-ratio">R1: {{ roundOneTotal(finalist.contestantId._id) }}</span>
+            <span v-if="getFinalScore(finalist.contestantId._id) !== null" class="score-val">
+              Final: {{ getFinalScore(finalist.contestantId._id) }} pts
+            </span>
+          </div>
+          <div class="final-score-pills">
+            <span :class="{ complete: finalCategoryScored(finalist.contestantId._id, 'intelligence') }">Intelligence</span>
+            <span :class="{ complete: finalCategoryScored(finalist.contestantId._id, 'beauty') }">Beauty</span>
+          </div>
         </div>
 
         <StatusBadge
@@ -49,6 +58,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import ContestantCard from '../../components/ContestantCard.vue';
 import EmptyState from '../../components/EmptyState.vue';
 import LoadingState from '../../components/LoadingState.vue';
@@ -82,6 +92,11 @@ function scoreComplete(contestantId) {
   return score?.intelligence !== undefined && score?.beauty !== undefined;
 }
 
+function finalCategoryScored(contestantId, key) {
+  const score = scores.value.find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId));
+  return score?.[key] !== undefined && score?.[key] !== null;
+}
+
 function getFinalScore(contestantId) {
   const score = scores.value.find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId));
   if (!score || score.intelligence == null || score.beauty == null) return null;
@@ -104,21 +119,38 @@ onMounted(async () => {
 <style scoped>
 .progress-details-row {
   display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 0.5rem;
   font-size: 0.85rem;
 }
 
 .all-done-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--success);
   font-weight: 800;
 }
 
+.all-done-tag .app-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.judge-card-score {
+  flex: 1;
+  min-width: 0;
+}
+
 .card-score-summary {
   display: flex;
+  justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .score-ratio {
@@ -131,5 +163,34 @@ onMounted(async () => {
   font-size: 0.95rem;
   font-weight: 900;
   color: var(--gold-dark);
+}
+
+.final-score-pills {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.final-score-pills span {
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.final-score-pills span.complete {
+  background: var(--success-soft);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: var(--success);
+}
+
+@media (min-width: 700px) {
+  .progress-details-row {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 </style>

@@ -4,17 +4,19 @@
     <section class="panel panel-gold">
       <div class="section-head">
         <div>
-          <span class="eyebrow">🏆 Tabulation Module</span>
+          <span class="eyebrow"><AppIcon name="awards" /> Tabulation Module</span>
           <h2>Special & Minor Awards Tabulator</h2>
           <p class="section-subhead">Category excellence titles calculated automatically from Round 1 scores, plus custom sponsor awards</p>
         </div>
 
         <div class="button-row">
           <button type="button" class="btn btn-primary" @click="openCreateModal">
-            + New Custom Special Award
+            <AppIcon name="plus" />
+            New Custom Special Award
           </button>
           <button type="button" class="btn btn-ghost" @click="printAllAwards">
-            🖨️ Print Awards Summary
+            <AppIcon name="printer" />
+            Print Awards Summary
           </button>
         </div>
       </div>
@@ -35,7 +37,7 @@
         <div class="awards-grid">
           <div v-for="award in data.categoryAwards || []" :key="award.key" class="award-card">
             <div class="award-card-header">
-              <span class="award-trophy">🏆</span>
+              <span class="award-trophy"><AppIcon name="awards" /></span>
               <div>
                 <h4 class="award-title">{{ award.title }}</h4>
                 <span class="award-category-tag">{{ award.categoryLabel }} (Weight: {{ award.weight }}%)</span>
@@ -49,9 +51,9 @@
               </div>
 
               <div class="award-winner-info">
-                <span class="winner-label">👑 Award Winner</span>
+                <span class="winner-label"><AppIcon name="finalists" /> Award Winner</span>
                 <strong class="winner-name">#{{ award.winner.contestantNumber }} {{ award.winner.name }}</strong>
-                <span v-if="award.winner.hometown" class="winner-hometown">📍 {{ award.winner.hometown }}</span>
+                <span v-if="award.winner.hometown" class="winner-hometown"><AppIcon name="mapPin" /> {{ award.winner.hometown }}</span>
                 <span class="winner-score-badge">Average: {{ award.topScore }} / 10.0 ({{ award.topScore100 }}%)</span>
               </div>
             </div>
@@ -88,7 +90,7 @@
         <div v-else class="awards-grid">
           <div v-for="award in data.customAwards || []" :key="award._id" class="award-card custom-card">
             <div class="award-card-header">
-              <span class="award-trophy">✨</span>
+              <span class="award-trophy"><AppIcon name="sparkles" /></span>
               <div>
                 <h4 class="award-title">{{ award.title }}</h4>
                 <span v-if="award.sponsor" class="award-sponsor-tag">Presented by: {{ award.sponsor }}</span>
@@ -104,12 +106,12 @@
               </div>
 
               <div class="award-winner-info">
-                <span class="winner-label">👑 Declared Winner</span>
+                <span class="winner-label"><AppIcon name="finalists" /> Declared Winner</span>
                 <strong class="winner-name">
                   #{{ award.winnerDetails?.contestantNumber || award.winnerContestantId?.contestantNumber }}
                   {{ award.winnerDetails?.name || award.winnerContestantId?.name }}
                 </strong>
-                <span v-if="award.winnerContestantId?.hometown" class="winner-hometown">📍 {{ award.winnerContestantId.hometown }}</span>
+                <span v-if="award.winnerContestantId?.hometown" class="winner-hometown"><AppIcon name="mapPin" /> {{ award.winnerContestantId.hometown }}</span>
               </div>
             </div>
 
@@ -134,7 +136,9 @@
         <div class="modal-panel">
           <div class="section-head">
             <h3>{{ editingAwardId ? 'Edit Special Award' : 'Create Special Award' }}</h3>
-            <button type="button" class="btn btn-ghost btn-sm" @click="showModal = false">✕</button>
+            <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showModal = false">
+              <AppIcon name="xMark" />
+            </button>
           </div>
 
           <form class="stack-form" @submit.prevent="saveCustomAward">
@@ -177,6 +181,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
@@ -253,7 +258,7 @@ onMounted(() => {
 <style scoped>
 .awards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.25rem;
 }
 
@@ -282,7 +287,12 @@ onMounted(() => {
 }
 
 .award-trophy {
-  font-size: 1.8rem;
+  color: var(--gold-dark);
+}
+
+.award-trophy .app-icon {
+  width: 1.8rem;
+  height: 1.8rem;
 }
 
 .award-title {
@@ -347,10 +357,19 @@ onMounted(() => {
 }
 
 .winner-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.7rem;
   font-weight: 800;
   color: var(--gold-dark);
   text-transform: uppercase;
+}
+
+.winner-label .app-icon,
+.winner-hometown .app-icon {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .winner-name {
@@ -359,6 +378,9 @@ onMounted(() => {
 }
 
 .winner-hometown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 700;
@@ -416,5 +438,10 @@ onMounted(() => {
   text-align: center;
   color: var(--text-muted);
 }
-</style>
 
+@media (min-width: 760px) {
+  .awards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+</style>

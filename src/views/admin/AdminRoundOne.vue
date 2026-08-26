@@ -4,7 +4,7 @@
     <section class="panel panel-gold no-print">
       <div class="section-head">
         <div>
-          <span class="eyebrow">🌟 Preliminary Phase Tabulation</span>
+          <span class="eyebrow"><AppIcon name="roundOne" /> Preliminary Phase Tabulation</span>
           <h2>Round 1 Official Results</h2>
           <p class="section-subhead">Certified rankings computed from all active judge score sheets</p>
         </div>
@@ -15,19 +15,24 @@
             Open Round 1
           </button>
           <button v-if="data.round?.status === 'OPEN'" class="btn btn-danger" type="button" @click="confirmLock = true">
-            🔒 Lock Round 1 & Generate Top 5
+            <AppIcon name="lock" />
+            Lock Round 1 & Generate Top 5
           </button>
           <button v-if="data.round?.status === 'LOCKED'" class="btn btn-warning" type="button" @click="confirmUnlock = true">
-            🔓 Unlock Round 1
+            <AppIcon name="lockOpen" />
+            Unlock Round 1
           </button>
           <button class="btn btn-ghost" type="button" @click="printSheet">
-            🖨️ Print Sheet
+            <AppIcon name="printer" />
+            Print Sheet
           </button>
           <button class="btn btn-ghost" type="button" @click="download('pdf')">
-            📄 Certified PDF
+            <AppIcon name="document" />
+            Certified PDF
           </button>
           <button class="btn btn-ghost" type="button" @click="download('xls')">
-            📊 Excel
+            <AppIcon name="chart" />
+            Excel
           </button>
           <button class="btn btn-ghost" type="button" @click="download('csv')">
             CSV
@@ -47,7 +52,7 @@
     <!-- Tie Warning Banner (if tie detected at cutoff) -->
     <section v-if="tieInfo.tied" class="panel panel-warning no-print">
       <div class="tie-banner-content">
-        <span class="tie-icon">⚠️</span>
+        <span class="tie-icon"><AppIcon name="warning" /></span>
         <div>
           <strong style="color: #b45309; font-size: 1.05rem;">Tie Detected at Finalist Cutoff Rank 5</strong>
           <p style="font-size: 0.85rem; color: #78350f; margin-top: 0.2rem;">
@@ -121,6 +126,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import ConfirmDialog from '../../components/ConfirmDialog.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import PrintTabulationSheet from '../../components/PrintTabulationSheet.vue';
 import ProgressBar from '../../components/ProgressBar.vue';
@@ -278,7 +284,13 @@ onMounted(async () => {
 }
 
 .tie-icon {
-  font-size: 1.6rem;
+  display: grid;
+  place-items: center;
+}
+
+.tie-icon .app-icon {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .judge-tag {

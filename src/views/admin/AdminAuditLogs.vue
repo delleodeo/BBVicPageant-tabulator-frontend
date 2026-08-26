@@ -3,14 +3,15 @@
     <section class="panel panel-gold">
       <div class="section-head">
         <div>
-          <span class="eyebrow">📜 Security & Compliance</span>
+          <span class="eyebrow"><AppIcon name="logs" /> Security & Compliance</span>
           <h2>Tamper-Proof Audit Trail</h2>
           <p class="section-subhead">Every score submission, judge action, round status change, and setting update is logged</p>
         </div>
 
         <div class="button-row">
           <button type="button" class="btn btn-ghost" @click="load">
-            🔄 Refresh Trail
+            <AppIcon name="arrowPath" />
+            Refresh Trail
           </button>
         </div>
       </div>
@@ -116,7 +117,9 @@
       <div class="modal-panel modal-panel-lg">
         <div class="section-head">
           <h3>Audit Record Inspection</h3>
-          <button type="button" class="btn btn-ghost btn-sm" @click="showModal = false">✕</button>
+          <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showModal = false">
+            <AppIcon name="xMark" />
+          </button>
         </div>
 
         <div v-if="selectedLog" class="log-details-stack">
@@ -152,6 +155,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import EmptyState from '../../components/EmptyState.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';

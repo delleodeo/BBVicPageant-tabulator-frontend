@@ -1,28 +1,35 @@
 <template>
   <AdminLayout title="Contestants Management">
     <!-- Header Control Bar -->
-    <section class="panel panel-gold">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">👥 Candidate Registry</span>
-          <h2>Official Contestants ({{ contestants.length }})</h2>
-          <p class="section-subhead">Manage candidate profiles, photos, hometowns, and advocacies</p>
-        </div>
+    <section class="contestants-hero-panel">
+      <div class="contestants-hero-copy">
+        <span class="eyebrow"><AppIcon name="contestants" /> Candidate Registry</span>
+        <h2>Official Contestants</h2>
+        <p>Manage candidate profiles, photos, hometowns, and advocacies.</p>
 
-        <div class="button-row">
+        <div class="contestant-stats-row" aria-label="Contestant status summary">
+          <span><strong>{{ contestants.length }}</strong> Total</span>
+          <span><strong>{{ statusCount('ACTIVE') }}</strong> Active</span>
+          <span><strong>{{ statusCount('FINALIST') }}</strong> Finalists</span>
+        </div>
+      </div>
+
+      <div class="contestants-hero-actions">
           <button type="button" class="btn btn-gold" @click="openCreateModal">
-            + Add New Candidate
+            <AppIcon name="plus" />
+            Add New Candidate
           </button>
           <button type="button" class="btn btn-ghost" @click="showBulkImportModal = true">
-            📥 Bulk Import CSV
+            <AppIcon name="arrowDownTray" />
+            Bulk Import CSV
           </button>
           <button type="button" class="btn btn-ghost" @click="exportContestantsCsv">
-            📤 Export CSV
+            <AppIcon name="arrowUpTray" />
+            Export CSV
           </button>
           <button type="button" class="btn btn-ghost btn-icon" :title="mode === 'card' ? 'Switch to Table' : 'Switch to Cards'" @click="mode = mode === 'card' ? 'table' : 'card'">
-            {{ mode === 'card' ? '📋' : '🪪' }}
+            <AppIcon :name="mode === 'card' ? 'table' : 'contestants'" />
           </button>
-        </div>
       </div>
     </section>
 
@@ -51,7 +58,8 @@
           :class="{ active: filterStatus === 'FINALIST' }"
           @click="filterStatus = 'FINALIST'"
         >
-          👑 Finalists
+          <AppIcon name="finalists" />
+          Finalists
         </button>
         <button
           type="button"
@@ -64,6 +72,7 @@
       </div>
 
       <div class="search-input-wrap">
+        <AppIcon name="search" />
         <input v-model="searchQuery" placeholder="Search by name, # or hometown..." />
       </div>
     </div>
@@ -71,10 +80,10 @@
     <LoadingState v-if="loading" label="contestants" />
 
     <!-- Card View -->
-    <section v-else-if="mode === 'card' && filteredContestants.length > 0" class="card-grid">
+    <section v-else-if="mode === 'card' && filteredContestants.length > 0" class="admin-contestants-grid">
       <article v-for="c in filteredContestants" :key="c._id" class="entity-card">
         <div class="contestant-card-top">
-          <div class="photo-frame small">
+          <div class="admin-candidate-photo">
             <img v-if="c.photo" :src="c.photo" :alt="c.name" />
             <span v-else>{{ c.name.slice(0, 2).toUpperCase() }}</span>
           </div>
@@ -82,17 +91,26 @@
           <div class="entity-info">
             <span class="c-number-badge">#{{ c.contestantNumber }}</span>
             <h3 class="c-title">{{ c.name }}</h3>
-            <p v-if="c.hometown" class="c-hometown">📍 {{ c.hometown }}</p>
+            <p v-if="c.hometown" class="c-hometown">
+              <AppIcon name="mapPin" />
+              {{ c.hometown }}
+            </p>
           </div>
         </div>
 
-        <p v-if="c.advocacy" class="c-advocacy-snippet">"{{ c.advocacy }}"</p>
+        <p class="c-advocacy-snippet">{{ c.advocacy || 'No advocacy added yet.' }}</p>
 
         <div class="entity-footer">
           <StatusBadge :label="c.status" :tone="c.status === 'FINALIST' ? 'success' : 'neutral'" />
           <div class="button-row">
-            <button type="button" class="btn btn-ghost btn-sm" @click="edit(c)">Edit</button>
-            <button type="button" class="btn btn-danger btn-sm" @click="remove(c)">Delete</button>
+            <button type="button" class="btn btn-ghost btn-sm" @click="edit(c)">
+              <AppIcon name="pencil" />
+              Edit
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" @click="remove(c)">
+              <AppIcon name="trash" />
+              Delete
+            </button>
           </div>
         </div>
       </article>
@@ -147,7 +165,9 @@
       <div class="modal-panel modal-panel-lg">
         <div class="section-head">
           <h3>{{ form._id ? 'Edit Candidate Profile' : 'Register New Candidate' }}</h3>
-          <button type="button" class="btn btn-ghost btn-sm" @click="showModal = false">✕</button>
+          <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showModal = false">
+            <AppIcon name="xMark" />
+          </button>
         </div>
 
         <form class="stack-form" @submit.prevent="save">
@@ -194,6 +214,28 @@
           </label>
 
           <label>
+            Upload Candidate Photo
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              :disabled="photoUpload.uploading"
+              @change="handlePhotoFileChange"
+            />
+          </label>
+
+          <div v-if="form.photo || photoUpload.uploading || photoUpload.error" class="photo-upload-preview">
+            <div class="photo-frame small">
+              <img v-if="form.photo" :src="form.photo" alt="Candidate photo preview" />
+              <AppIcon v-else name="contestants" />
+            </div>
+            <div>
+              <strong>{{ photoUpload.uploading ? 'Uploading image...' : 'Photo ready' }}</strong>
+              <p v-if="photoUpload.error">{{ photoUpload.error }}</p>
+              <p v-else-if="form.photo">{{ form.photo }}</p>
+            </div>
+          </div>
+
+          <label>
             Official Advocacy
             <input v-model="form.advocacy" placeholder="e.g. Youth Education & Environmental Literacy" />
           </label>
@@ -217,7 +259,9 @@
       <div class="modal-panel">
         <div class="section-head">
           <h3>Bulk Import Candidates (CSV/JSON)</h3>
-          <button type="button" class="btn btn-ghost btn-sm" @click="showBulkImportModal = false">✕</button>
+          <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showBulkImportModal = false">
+            <AppIcon name="xMark" />
+          </button>
         </div>
 
         <p style="font-size: 0.85rem; color: var(--text-muted);">
@@ -244,6 +288,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import EmptyState from '../../components/EmptyState.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
@@ -258,6 +303,7 @@ const searchQuery = ref('');
 const showModal = ref(false);
 const showBulkImportModal = ref(false);
 const bulkCsvText = ref('');
+const photoUpload = reactive({ uploading: false, error: '' });
 
 const form = reactive({
   _id: '',
@@ -293,6 +339,10 @@ const filteredContestants = computed(() => {
   });
 });
 
+function statusCount(status) {
+  return contestants.value.filter((contestant) => contestant.status === status).length;
+}
+
 function openCreateModal() {
   Object.assign(form, {
     _id: '',
@@ -306,12 +356,35 @@ function openCreateModal() {
     photo: '',
     status: 'ACTIVE'
   });
+  Object.assign(photoUpload, { uploading: false, error: '' });
   showModal.value = true;
 }
 
 function edit(c) {
   Object.assign(form, c);
+  Object.assign(photoUpload, { uploading: false, error: '' });
   showModal.value = true;
+}
+
+async function handlePhotoFileChange(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  photoUpload.uploading = true;
+  photoUpload.error = '';
+
+  try {
+    const payload = new FormData();
+    payload.append('image', file);
+
+    const { data } = await api.post('/uploads/contestant-photo', payload);
+    form.photo = data.url;
+  } catch (err) {
+    photoUpload.error = err.response?.data?.message || 'Unable to upload image.';
+  } finally {
+    photoUpload.uploading = false;
+    event.target.value = '';
+  }
 }
 
 async function save() {
@@ -388,10 +461,67 @@ onMounted(load);
 </script>
 
 <style scoped>
+.contestants-hero-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-hover) 100%);
+  box-shadow: var(--shadow-md);
+}
+
+.contestants-hero-copy h2 {
+  margin-top: 0.25rem;
+  font-size: clamp(1.35rem, 4vw, 1.9rem);
+  font-weight: 900;
+}
+
+.contestants-hero-copy p {
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.contestant-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.contestant-stats-row span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.contestant-stats-row strong {
+  color: var(--gold-dark);
+  font-size: 0.9rem;
+}
+
+.contestants-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
 .filter-search-bar {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
@@ -399,10 +529,21 @@ onMounted(load);
 
 .filter-chips {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.45rem 0.85rem;
   border-radius: var(--radius-full);
   background: var(--surface);
@@ -411,6 +552,8 @@ onMounted(load);
   font-weight: 700;
   cursor: pointer;
   transition: all 150ms ease;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .filter-chip:hover {
@@ -423,8 +566,53 @@ onMounted(load);
   border-color: var(--gold-dark);
 }
 
+.filter-chip .app-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .search-input-wrap {
-  min-width: 260px;
+  width: 100%;
+  position: relative;
+}
+
+.search-input-wrap .app-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  color: var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  padding-left: 2.35rem;
+}
+
+.admin-contestants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.admin-contestants-grid .entity-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 235px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.admin-contestants-grid .entity-card:hover {
+  border-color: var(--border-gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .contestant-card-top {
@@ -433,9 +621,30 @@ onMounted(load);
   gap: 1rem;
 }
 
+.admin-candidate-photo {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--navy);
+  color: var(--gold-light);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.admin-candidate-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .entity-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .c-number-badge {
@@ -445,18 +654,28 @@ onMounted(load);
 }
 
 .c-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
+  word-break: break-word;
 }
 
 .c-hometown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.8rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 
+.c-hometown .app-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .c-advocacy-snippet {
+  min-height: 2.5rem;
   font-size: 0.8rem;
   color: var(--text-muted);
   font-style: italic;
@@ -464,21 +683,59 @@ onMounted(load);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin: 0.25rem 0;
+  margin: 0.75rem 0;
+}
+
+.photo-upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface-hover);
+  border: 1px dashed var(--border-gold);
+  border-radius: var(--radius-md);
+}
+
+.photo-upload-preview strong {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.photo-upload-preview p {
+  max-width: 100%;
+  margin-top: 0.15rem;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.photo-upload-preview .app-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--gold-light);
 }
 
 .entity-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   margin-top: auto;
 }
 
+.entity-footer .button-row {
+  gap: 0.45rem;
+}
+
+.entity-footer .btn {
+  min-height: 34px;
+  padding: 0.45rem 0.65rem;
+}
+
 .form-row-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
@@ -490,9 +747,35 @@ onMounted(load);
   font-size: 0.82rem;
 }
 
-@media (max-width: 600px) {
+@media (min-width: 600px) {
+  .contestants-hero-panel {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 1.35rem 1.5rem;
+  }
+
+  .contestants-hero-actions {
+    justify-content: flex-end;
+  }
+
+  .filter-search-bar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .search-input-wrap {
+    width: auto;
+    min-width: 260px;
+  }
+
   .form-row-2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1500px) {
+  .admin-contestants-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 </style>

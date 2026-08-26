@@ -43,7 +43,8 @@
             class="btn btn-gold"
             @click="openRoundOne"
           >
-            ⭐ Open Round 1
+            <AppIcon name="roundOne" />
+            Open Round 1
           </button>
 
           <RouterLink
@@ -58,7 +59,8 @@
             to="/admin/special-awards"
             class="btn btn-ghost"
           >
-            🏆 Special Awards
+            <AppIcon name="awards" />
+            Special Awards
           </RouterLink>
 
           <RouterLink
@@ -66,7 +68,8 @@
             target="_blank"
             class="btn btn-gold"
           >
-            👑 Open Stage Screen (Projector)
+            <AppIcon name="stage" />
+            Open Stage Screen (Projector)
           </RouterLink>
         </div>
       </section>
@@ -125,6 +128,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import LiveJudgeMatrix from '../../components/LiveJudgeMatrix.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import ProgressBar from '../../components/ProgressBar.vue';
 import ScoreboardPodium from '../../components/ScoreboardPodium.vue';

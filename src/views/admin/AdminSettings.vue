@@ -4,7 +4,7 @@
     <section class="panel panel-gold">
       <div class="section-head">
         <div>
-          <span class="eyebrow">👑 Pageant Branding</span>
+          <span class="eyebrow"><AppIcon name="settings" /> Pageant Branding</span>
           <h2>Pageant Information & Branding</h2>
           <p class="section-subhead">These details appear on official PDF certificates, printouts, and the stage presentation screen</p>
         </div>
@@ -64,6 +64,7 @@
 
         <div class="button-row" style="margin-top: 1rem;">
           <button class="btn btn-primary" type="submit">
+            <AppIcon name="check" />
             Save Pageant Settings
           </button>
         </div>
@@ -115,7 +116,7 @@
 
       <div class="backup-tools-grid">
         <div class="backup-tool-card">
-          <div class="tool-icon">💾</div>
+          <div class="tool-icon"><AppIcon name="arrowDownTray" /></div>
           <div>
             <h4>Download Full Backup Snapshot</h4>
             <p style="font-size: 0.84rem; color: var(--text-muted);">
@@ -123,12 +124,13 @@
             </p>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" @click="downloadBackup">
+            <AppIcon name="arrowDownTray" />
             Download JSON Backup
           </button>
         </div>
 
         <div class="backup-tool-card">
-          <div class="tool-icon">🔄</div>
+          <div class="tool-icon"><AppIcon name="arrowPath" /></div>
           <div>
             <h4>Reset Pageant with Sample Demo Data</h4>
             <p style="font-size: 0.84rem; color: var(--text-muted);">
@@ -136,6 +138,7 @@
             </p>
           </div>
           <button type="button" class="btn btn-danger btn-sm" @click="resetDemoData">
+            <AppIcon name="arrowPath" />
             Reset Demo Data
           </button>
         </div>
@@ -148,6 +151,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import Toast from '../../components/Toast.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
@@ -203,13 +207,11 @@ async function resetDemoData() {
 <style scoped>
 .form-row-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
 .criteria-preview-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
@@ -253,7 +255,6 @@ async function resetDemoData() {
 
 .backup-tools-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
 }
 
@@ -268,7 +269,12 @@ async function resetDemoData() {
 }
 
 .tool-icon {
-  font-size: 1.8rem;
+  color: var(--gold-dark);
+}
+
+.tool-icon .app-icon {
+  width: 1.8rem;
+  height: 1.8rem;
 }
 
 .backup-tool-card h4 {
@@ -276,11 +282,11 @@ async function resetDemoData() {
   font-weight: 800;
 }
 
-@media (max-width: 700px) {
+@media (min-width: 700px) {
   .form-row-2,
   .criteria-preview-grid,
   .backup-tools-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 </style>

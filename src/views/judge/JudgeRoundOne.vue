@@ -13,7 +13,10 @@
       <ProgressBar :value="progress" />
       <div class="progress-details-row">
         <span>Scoring Progress: <strong>{{ completeCount }} of {{ contestants.length }} Completed</strong> ({{ progress }}%)</span>
-        <span v-if="completeCount === contestants.length" class="all-done-tag">🎉 All Candidates Graded!</span>
+        <span v-if="completeCount === contestants.length" class="all-done-tag">
+          <AppIcon name="check" />
+          All Candidates Graded
+        </span>
       </div>
     </section>
 
@@ -26,6 +29,7 @@
           :class="{ active: filterTab === 'ALL' }"
           @click="filterTab = 'ALL'"
         >
+          <AppIcon name="contestants" />
           All ({{ contestants.length }})
         </button>
         <button
@@ -34,6 +38,7 @@
           :class="{ active: filterTab === 'PENDING' }"
           @click="filterTab = 'PENDING'"
         >
+          <AppIcon name="scoreSheet" />
           Pending ({{ contestants.length - completeCount }})
         </button>
         <button
@@ -42,11 +47,13 @@
           :class="{ active: filterTab === 'COMPLETE' }"
           @click="filterTab = 'COMPLETE'"
         >
+          <AppIcon name="check" />
           Completed ({{ completeCount }})
         </button>
       </div>
 
       <div class="search-input-wrap">
+        <AppIcon name="search" />
         <input v-model="searchQuery" placeholder="Search by name, # or hometown..." />
       </div>
     </div>
@@ -60,11 +67,16 @@
         :contestant="contestant"
         :to="`/judge/round-one/${contestant._id}`"
       >
-        <div class="card-score-summary">
-          <span class="score-ratio">{{ scoreCount(contestant) }} / 5 Scored</span>
-          <span v-if="getContestantTotal(contestant) !== null" class="score-val">
-            {{ getContestantTotal(contestant) }} pts
-          </span>
+        <div class="judge-card-score">
+          <div class="card-score-summary">
+            <span class="score-ratio">{{ scoreCount(contestant) }} / 5 Scored</span>
+            <span v-if="getContestantTotal(contestant) !== null" class="score-val">
+              {{ getContestantTotal(contestant) }} pts
+            </span>
+          </div>
+          <div class="mini-progress" aria-hidden="true">
+            <span :style="{ width: `${(scoreCount(contestant) / 5) * 100}%` }"></span>
+          </div>
         </div>
 
         <StatusBadge
@@ -80,6 +92,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import ContestantCard from '../../components/ContestantCard.vue';
 import EmptyState from '../../components/EmptyState.vue';
 import LoadingState from '../../components/LoadingState.vue';
@@ -157,21 +170,32 @@ onMounted(async () => {
 <style scoped>
 .progress-details-row {
   display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 0.5rem;
   font-size: 0.85rem;
 }
 
 .all-done-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--success);
   font-weight: 800;
 }
 
+.all-done-tag .app-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .filter-search-bar {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
@@ -179,10 +203,22 @@ onMounted(async () => {
 
 .filter-chips {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.45rem 0.85rem;
   border-radius: var(--radius-full);
   background: var(--surface);
@@ -191,6 +227,8 @@ onMounted(async () => {
   font-weight: 700;
   cursor: pointer;
   transition: all 150ms ease;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .filter-chip:hover {
@@ -203,14 +241,42 @@ onMounted(async () => {
   border-color: var(--gold-dark);
 }
 
+.filter-chip .app-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .search-input-wrap {
-  min-width: 250px;
+  width: 100%;
+  position: relative;
+}
+
+.search-input-wrap .app-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  color: var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  padding-left: 2.35rem;
+}
+
+.judge-card-score {
+  flex: 1;
+  min-width: 0;
 }
 
 .card-score-summary {
   display: flex;
+  justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .score-ratio {
@@ -223,5 +289,33 @@ onMounted(async () => {
   font-size: 0.95rem;
   font-weight: 900;
   color: var(--gold-dark);
+}
+
+.mini-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-active);
+}
+
+.mini-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--success));
+  transition: width 180ms ease;
+}
+
+@media (min-width: 700px) {
+  .progress-details-row,
+  .filter-search-bar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .search-input-wrap {
+    width: auto;
+    min-width: 280px;
+  }
 }
 </style>

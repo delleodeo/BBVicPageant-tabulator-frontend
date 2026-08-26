@@ -8,15 +8,15 @@
       <h1>{{ title }}</h1>
     </div>
 
-    <div class="topbar-actions">
+    <div v-if="!hideActions" class="topbar-actions">
       <!-- Stage Mode link for quick presentation on projector/TV -->
       <RouterLink to="/stage" target="_blank" class="btn btn-gold btn-sm" title="Open Stage Presentation Mode">
-        <span>👑</span> Stage Mode
+        <AppIcon name="stage" /> Stage Mode
       </RouterLink>
 
       <!-- Theme Switcher -->
       <button type="button" class="btn btn-ghost btn-icon btn-sm" :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'" @click="toggleTheme">
-        <span>{{ isDark ? '☀️' : '🌙' }}</span>
+        <AppIcon :name="isDark ? 'sun' : 'moon'" />
       </button>
 
       <!-- User Profile Info -->
@@ -29,6 +29,7 @@
       </div>
 
       <button class="btn btn-ghost btn-sm" type="button" @click="logout">
+        <AppIcon name="arrowRightOnRectangle" />
         Logout
       </button>
     </div>
@@ -38,10 +39,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import AppIcon from './AppIcon.vue';
 import { useAuthStore } from '../stores/auth.js';
 
 defineProps({
-  title: { type: String, required: true }
+  title: { type: String, required: true },
+  hideActions: { type: Boolean, default: false }
 });
 
 const auth = useAuthStore();
@@ -140,5 +143,35 @@ function logout() {
   color: var(--gold-dark);
   font-weight: 700;
   text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .topbar-title-wrap {
+    width: 100%;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+  }
+
+  .topbar-actions > .btn:first-child,
+  .user-chip {
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .user-chip {
+    padding-right: 0.6rem;
+  }
+
+  .user-display-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>

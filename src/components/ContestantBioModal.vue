@@ -5,9 +5,14 @@
         <div class="candidate-title-block">
           <span class="eyebrow">Candidate Profile</span>
           <h2>#{{ contestant?.contestantNumber }} {{ contestant?.name }}</h2>
-          <p v-if="contestant?.hometown" class="candidate-hometown">📍 {{ contestant.hometown }}</p>
+          <p v-if="contestant?.hometown" class="candidate-hometown">
+            <AppIcon name="mapPin" />
+            {{ contestant.hometown }}
+          </p>
         </div>
-        <button type="button" class="close-btn" @click="$emit('close')">✕</button>
+        <button type="button" class="close-btn" title="Close profile" @click="$emit('close')">
+          <AppIcon name="xMark" />
+        </button>
       </div>
 
       <div class="bio-modal-body">
@@ -59,6 +64,8 @@
 </template>
 
 <script setup>
+import AppIcon from './AppIcon.vue';
+
 defineEmits(['close']);
 defineProps({
   open: { type: Boolean, default: false },
@@ -82,9 +89,18 @@ defineProps({
 }
 
 .candidate-hometown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--gold-dark);
+}
+
+.candidate-hometown .app-icon,
+.close-btn .app-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .close-btn {
@@ -192,4 +208,3 @@ defineProps({
   }
 }
 </style>
-

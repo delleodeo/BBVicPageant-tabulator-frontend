@@ -1,7 +1,7 @@
 <template>
   <div class="podium-wrapper">
     <div class="podium-header">
-      <div class="eyebrow">👑 Live Leaderboard</div>
+      <div class="eyebrow"><AppIcon name="finalists" /> Live Leaderboard</div>
       <h3>Top Contenders</h3>
     </div>
 
@@ -14,7 +14,7 @@
       <div v-if="items[1]" class="podium-col rank-2">
         <div class="candidate-avatar">
           <div class="avatar-ring silver">
-            <span class="rank-crown">🥈</span>
+            <span class="rank-crown"><AppIcon name="awards" /></span>
             <img v-if="items[1].contestant?.photo" :src="items[1].contestant.photo" :alt="items[1].contestant.name" />
             <span v-else class="avatar-initials">{{ items[1].contestant?.name?.slice(0, 2) }}</span>
           </div>
@@ -33,7 +33,7 @@
       <div v-if="items[0]" class="podium-col rank-1">
         <div class="candidate-avatar">
           <div class="avatar-ring gold">
-            <span class="rank-crown">👑</span>
+            <span class="rank-crown"><AppIcon name="finalists" /></span>
             <img v-if="items[0].contestant?.photo" :src="items[0].contestant.photo" :alt="items[0].contestant.name" />
             <span v-else class="avatar-initials">{{ items[0].contestant?.name?.slice(0, 2) }}</span>
           </div>
@@ -52,7 +52,7 @@
       <div v-if="items[2]" class="podium-col rank-3">
         <div class="candidate-avatar">
           <div class="avatar-ring bronze">
-            <span class="rank-crown">🥉</span>
+            <span class="rank-crown"><AppIcon name="awards" /></span>
             <img v-if="items[2].contestant?.photo" :src="items[2].contestant.photo" :alt="items[2].contestant.name" />
             <span v-else class="avatar-initials">{{ items[2].contestant?.name?.slice(0, 2) }}</span>
           </div>
@@ -81,6 +81,7 @@
 </template>
 
 <script setup>
+import AppIcon from './AppIcon.vue';
 import { fmt } from '../utils/score.js';
 
 defineProps({
@@ -168,8 +169,13 @@ defineProps({
 .rank-crown {
   position: absolute;
   top: -12px;
-  font-size: 1.2rem;
   z-index: 2;
+  color: var(--gold);
+}
+
+.rank-crown .app-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .candidate-info {
@@ -277,4 +283,3 @@ defineProps({
   padding: 2rem 0;
 }
 </style>
-

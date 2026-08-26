@@ -14,7 +14,10 @@
 
     <div class="card-details">
       <h3 class="card-candidate-name">{{ contestant?.name }}</h3>
-      <p v-if="contestant?.hometown" class="card-candidate-hometown">📍 {{ contestant.hometown }}</p>
+      <p v-if="contestant?.hometown" class="card-candidate-hometown">
+        <AppIcon name="mapPin" />
+        {{ contestant.hometown }}
+      </p>
       <p v-if="contestant?.advocacy" class="card-candidate-advocacy">"{{ contestant.advocacy }}"</p>
     </div>
 
@@ -26,6 +29,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import AppIcon from './AppIcon.vue';
 
 const props = defineProps({
   contestant: { type: Object, required: true },
@@ -58,9 +62,17 @@ const initials = computed(() =>
 }
 
 .card-candidate-hometown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-size: 0.8rem;
   color: var(--gold-dark);
   font-weight: 700;
+}
+
+.card-candidate-hometown .app-icon {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .card-candidate-advocacy {
@@ -77,6 +89,7 @@ const initials = computed(() =>
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--border);

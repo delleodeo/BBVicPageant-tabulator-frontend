@@ -4,17 +4,19 @@
     <section class="panel panel-gold">
       <div class="section-head">
         <div>
-          <span class="eyebrow">⚖️ Board of Judges</span>
+          <span class="eyebrow"><AppIcon name="judges" /> Board of Judges</span>
           <h2>Accredited Judges ({{ judges.length }})</h2>
           <p class="section-subhead">Manage judge accounts, credentials, designations, and reset passwords</p>
         </div>
 
         <div class="button-row">
           <button type="button" class="btn btn-gold" @click="showCreateModal = true">
-            + Add New Judge
+            <AppIcon name="plus" />
+            Add New Judge
           </button>
           <button type="button" class="btn btn-ghost" @click="printJudgeCredentials">
-            🖨️ Print Judge Tally Cards
+            <AppIcon name="printer" />
+            Print Judge Tally Cards
           </button>
         </div>
       </div>
@@ -83,7 +85,9 @@
       <div class="modal-panel">
         <div class="section-head">
           <h3>{{ editingJudgeId ? 'Edit Judge Details' : 'Register New Judge' }}</h3>
-          <button type="button" class="btn btn-ghost btn-sm" @click="showCreateModal = false">✕</button>
+          <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showCreateModal = false">
+            <AppIcon name="xMark" />
+          </button>
         </div>
 
         <form class="stack-form" @submit.prevent="saveJudge">
@@ -126,7 +130,9 @@
       <div class="modal-panel">
         <div class="section-head">
           <h3>Reset Judge Password</h3>
-          <button type="button" class="btn btn-ghost btn-sm" @click="showResetModal = false">✕</button>
+          <button type="button" class="btn btn-ghost btn-icon btn-sm" title="Close" @click="showResetModal = false">
+            <AppIcon name="xMark" />
+          </button>
         </div>
 
         <p style="font-size: 0.88rem; color: var(--text-muted);">
@@ -158,6 +164,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';

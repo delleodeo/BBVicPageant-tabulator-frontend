@@ -19,15 +19,15 @@ defineProps({
 });
 
 const items = [
-  { label: 'Dashboard', short: 'Home', to: '/admin/dashboard', icon: '📊' },
-  { label: 'Live Matrix', short: 'Matrix', to: '/admin/dashboard#matrix', icon: '⚡' },
-  { label: 'Contestants', short: 'People', to: '/admin/contestants', icon: '👥' },
-  { label: 'Judges', short: 'Judges', to: '/admin/judges', icon: '⚖️' },
-  { label: 'Round 1 Results', short: 'R1', to: '/admin/round-one', icon: '🌟' },
-  { label: 'Special Awards', short: 'Awards', to: '/admin/special-awards', icon: '🏆' },
-  { label: 'Top 5 Finalists', short: 'Top 5', to: '/admin/finalists', icon: '👑' },
-  { label: 'Final Round', short: 'Final', to: '/admin/final-round', icon: '🥇' },
-  { label: 'Audit Trail', short: 'Logs', to: '/admin/audit-logs', icon: '📜' },
-  { label: 'Settings & Criteria', short: 'Set', to: '/admin/settings', icon: '⚙️' }
+  { label: 'Dashboard', short: 'Home', to: '/admin/dashboard', icon: 'dashboard' },
+  { label: 'Live Matrix', short: 'Matrix', to: '/admin/dashboard#matrix', icon: 'matrix' },
+  { label: 'Contestants', short: 'People', to: '/admin/contestants', icon: 'contestants' },
+  { label: 'Judges', short: 'Judges', to: '/admin/judges', icon: 'judges' },
+  { label: 'Round 1 Results', short: 'R1', to: '/admin/round-one', icon: 'roundOne' },
+  { label: 'Special Awards', short: 'Awards', to: '/admin/special-awards', icon: 'awards' },
+  { label: 'Top 5 Finalists', short: 'Top 5', to: '/admin/finalists', icon: 'finalists' },
+  { label: 'Final Round', short: 'Final', to: '/admin/final-round', icon: 'finalRound' },
+  { label: 'Audit Trail', short: 'Logs', to: '/admin/audit-logs', icon: 'logs' },
+  { label: 'Settings & Criteria', short: 'Set', to: '/admin/settings', icon: 'settings' }
 ];
 </script>

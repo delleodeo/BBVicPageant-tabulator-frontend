@@ -2,7 +2,7 @@
   <div class="app-shell judge-shell">
     <Sidebar :items="items" />
     <main class="main-panel">
-      <Topbar :title="title" />
+      <Topbar :title="title" hide-actions />
       <slot />
     </main>
     <MobileNavigation :items="items" />
@@ -19,9 +19,9 @@ defineProps({
 });
 
 const items = [
-  { label: 'Judge Hub', short: 'Hub', to: '/judge/dashboard', icon: '📋' },
-  { label: 'Score Round 1', short: 'R1', to: '/judge/round-one', icon: '⭐' },
-  { label: 'Score Final Round', short: 'Final', to: '/judge/final', icon: '👑' },
-  { label: 'My Profile', short: 'Profile', to: '/judge/profile', icon: '👤' }
+  { label: 'Judge Hub', short: 'Hub', to: '/judge/dashboard', icon: 'scoreSheet' },
+  { label: 'Score Round 1', short: 'R1', to: '/judge/round-one', icon: 'roundOne' },
+  { label: 'Score Final Round', short: 'Final', to: '/judge/final', icon: 'finalists' },
+  { label: 'My Profile', short: 'Profile', to: '/judge/profile', icon: 'profile' }
 ];
 </script>

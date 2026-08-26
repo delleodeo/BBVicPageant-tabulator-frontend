@@ -3,7 +3,8 @@
     <!-- Top Action Bar -->
     <div class="judge-scoring-topbar">
       <RouterLink class="btn btn-ghost btn-sm" to="/judge/final">
-        ← Back to Finalists
+        <AppIcon name="arrowLeft" />
+        Back
       </RouterLink>
 
       <div class="top-nav-steppers">
@@ -13,7 +14,8 @@
           :disabled="!prevFinalist"
           @click="navigateFinalist(prevFinalist)"
         >
-          ← Prev (#{{ prevFinalist?.contestantId?.contestantNumber || '-' }})
+          <AppIcon name="arrowLeft" />
+          #{{ prevFinalist?.contestantId?.contestantNumber || '-' }}
         </button>
 
         <button
@@ -21,7 +23,8 @@
           class="btn btn-ghost btn-sm"
           @click="showBioModal = true"
         >
-          👑 View Bio & Advocacy
+          <AppIcon name="user" />
+          Bio
         </button>
 
         <button
@@ -30,7 +33,8 @@
           :disabled="!nextFinalist"
           @click="navigateFinalist(nextFinalist)"
         >
-          Next (#{{ nextFinalist?.contestantId?.contestantNumber || '-' }}) →
+          #{{ nextFinalist?.contestantId?.contestantNumber || '-' }}
+          <AppIcon name="arrowRight" />
         </button>
       </div>
     </div>
@@ -48,10 +52,13 @@
             </div>
           </div>
 
-          <div>
-            <div class="eyebrow">👑 Finalist • Candidate #{{ finalist.contestantId.contestantNumber }}</div>
+          <div class="candidate-copy">
+            <div class="eyebrow"><AppIcon name="finalists" /> Finalist Candidate #{{ finalist.contestantId.contestantNumber }}</div>
             <h2>{{ finalist.contestantId.name }}</h2>
-            <p v-if="finalist.contestantId.hometown" class="c-hometown">📍 {{ finalist.contestantId.hometown }}</p>
+            <p v-if="finalist.contestantId.hometown" class="c-hometown">
+              <AppIcon name="mapPin" />
+              {{ finalist.contestantId.hometown }}
+            </p>
             <div class="r1-carryover-badge">
               <span>Round 1 Carry-over (20%):</span>
               <strong>{{ fmt(roundOne?.total) }} pts</strong>
@@ -60,17 +67,28 @@
           </div>
         </div>
 
-        <div class="candidate-header-right">
-          <div class="total-score-card">
-            <span class="total-label">Final Projected Score</span>
-            <div class="total-number-display">
-              <span class="score-bold">{{ totalCalculatedFinalScore }}</span>
-              <span class="score-max">/ 100</span>
-            </div>
-            <div class="completion-pill" :class="{ complete: isAllScored }">
-              {{ isAllScored ? '✓ Intelligence & Beauty Scored' : 'Pending Final Ratings' }}
-            </div>
+        <div class="total-score-card">
+          <span class="total-label">Projected Score</span>
+          <div class="total-number-display">
+            <span class="score-bold">{{ totalCalculatedFinalScore }}</span>
+            <span class="score-max">/ 100</span>
           </div>
+          <div class="completion-pill" :class="{ complete: isAllScored }">
+            <AppIcon v-if="isAllScored" name="check" />
+            {{ isAllScored ? 'Final scores complete' : 'Pending ratings' }}
+          </div>
+        </div>
+      </section>
+
+      <section class="score-progress-strip" aria-label="Final scoring progress">
+        <div
+          v-for="category in categories"
+          :key="category.key"
+          class="score-progress-chip"
+          :class="{ complete: categoryScored(category.key) }"
+        >
+          <AppIcon :name="categoryScored(category.key) ? 'check' : 'scoreSheet'" />
+          <span>{{ category.label }}</span>
         </div>
       </section>
 
@@ -95,7 +113,8 @@
             <p class="section-subhead">Record speech clarity, articulation, composure, and charisma.</p>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" :disabled="savingNote" @click="saveNote">
-            {{ savingNote ? 'Saving...' : noteSaved ? '✓ Saved' : 'Save Notes' }}
+            <AppIcon :name="noteSaved ? 'check' : 'document'" />
+            {{ savingNote ? 'Saving...' : noteSaved ? 'Saved' : 'Save Notes' }}
           </button>
         </div>
         <textarea
@@ -115,7 +134,8 @@
             :disabled="!prevFinalist"
             @click="navigateFinalist(prevFinalist)"
           >
-            ← Previous Finalist
+            <AppIcon name="arrowLeft" />
+            Previous Finalist
           </button>
 
           <RouterLink class="btn btn-ghost" to="/judge/final">
@@ -128,7 +148,8 @@
             :disabled="!nextFinalist"
             @click="navigateFinalist(nextFinalist)"
           >
-            Next Finalist →
+            Next Finalist
+            <AppIcon name="arrowRight" />
           </button>
         </div>
       </section>
@@ -151,6 +172,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CategoryScoreCard from '../../components/CategoryScoreCard.vue';
 import ContestantBioModal from '../../components/ContestantBioModal.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import Toast from '../../components/Toast.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
@@ -178,6 +200,10 @@ const showBioModal = ref(false);
 const isAllScored = computed(() => {
   return score.value?.intelligence != null && score.value?.beauty != null;
 });
+
+function categoryScored(categoryKey) {
+  return score.value?.[categoryKey] !== undefined && score.value?.[categoryKey] !== null;
+}
 
 const totalCalculatedFinalScore = computed(() => {
   const r1 = Number(roundOne.value?.total || 0);
@@ -293,36 +319,36 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .judge-scoring-topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
 .top-nav-steppers {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
 .candidate-scoring-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
 }
 
 .candidate-header-left {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 0.85rem;
 }
 
 .header-photo-wrap {
-  width: 72px;
+  width: 58px;
   height: 72px;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -348,36 +374,66 @@ onBeforeUnmount(() => {
   font-size: 1.4rem;
 }
 
+.candidate-copy {
+  min-width: 0;
+}
+
+.candidate-copy .eyebrow {
+  font-size: 0.68rem;
+}
+
+.candidate-copy h2 {
+  font-size: clamp(1.35rem, 7vw, 1.9rem);
+  line-height: 1.05;
+  word-break: break-word;
+}
+
 .c-hometown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.85rem;
   color: var(--gold-dark);
   font-weight: 700;
 }
 
+.c-hometown .app-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .r1-carryover-badge {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
+  gap: 0.2rem 0.45rem;
+  width: 100%;
+  max-width: 280px;
+  font-size: 0.74rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-full);
-  margin-top: 0.3rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-md);
+  margin-top: 0.55rem;
 }
 
 .r1-carryover-badge strong {
   color: var(--gold-dark);
 }
 
+.r1-carryover-badge small {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+
 .total-score-card {
   background: var(--surface);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
-  padding: 0.85rem 1.25rem;
+  padding: 0.85rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 0.2rem;
   box-shadow: var(--shadow-sm);
 }
@@ -396,7 +452,7 @@ onBeforeUnmount(() => {
 }
 
 .score-bold {
-  font-size: 2rem;
+  font-size: clamp(1.65rem, 9vw, 2.25rem);
   font-weight: 900;
   color: var(--gold-dark);
 }
@@ -408,7 +464,11 @@ onBeforeUnmount(() => {
 }
 
 .completion-pill {
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--text-muted);
   background: var(--surface-hover);
@@ -416,7 +476,45 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-full);
 }
 
+.completion-pill .app-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .completion-pill.complete {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.score-progress-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.score-progress-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.score-progress-chip .app-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+}
+
+.score-progress-chip.complete {
+  border-color: rgba(16, 185, 129, 0.25);
   background: var(--success-soft);
   color: var(--success);
 }
@@ -431,6 +529,34 @@ onBeforeUnmount(() => {
 }
 
 .scoring-footer-nav .button-row {
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: stretch;
+}
+
+@media (min-width: 720px) {
+  .judge-scoring-topbar {
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+  }
+
+  .top-nav-steppers {
+    align-items: center;
+  }
+
+  .candidate-scoring-header {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    align-items: center;
+    padding: 1.35rem;
+  }
+
+  .score-progress-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .scoring-footer-nav .button-row {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 </style>

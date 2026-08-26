@@ -4,7 +4,7 @@
     <section class="panel panel-gold no-print">
       <div class="section-head">
         <div>
-          <span class="eyebrow">👑 Championship Phase</span>
+          <span class="eyebrow"><AppIcon name="finalists" /> Championship Phase</span>
           <h2>Grand Coronation Final Results</h2>
           <p class="section-subhead">Formula: Round 1 (20%) + Final Intelligence (40%) + Final Beauty (40%)</p>
         </div>
@@ -12,22 +12,27 @@
         <div class="button-row">
           <StatusBadge :label="data.round?.status || 'SETUP'" :tone="data.round?.status === 'LOCKED' ? 'success' : 'neutral'" />
           <button v-if="data.round?.status === 'OPEN'" class="btn btn-danger" type="button" @click="confirmFinalLock = true">
-            🔒 Lock Final Results & Proclaim Winners
+            <AppIcon name="lock" />
+            Lock Final Results & Proclaim Winners
           </button>
           <button class="btn btn-ghost" type="button" @click="printSheet">
-            🖨️ Print Sheet
+            <AppIcon name="printer" />
+            Print Sheet
           </button>
           <button class="btn btn-ghost" type="button" @click="download('pdf')">
-            📄 Certified PDF
+            <AppIcon name="document" />
+            Certified PDF
           </button>
           <button class="btn btn-ghost" type="button" @click="download('xls')">
-            📊 Excel
+            <AppIcon name="chart" />
+            Excel
           </button>
           <button class="btn btn-ghost" type="button" @click="download('csv')">
             CSV
           </button>
           <RouterLink to="/stage" target="_blank" class="btn btn-gold">
-            👑 Stage Mode
+            <AppIcon name="stage" />
+            Stage Mode
           </RouterLink>
         </div>
       </div>
@@ -76,6 +81,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import ConfirmDialog from '../../components/ConfirmDialog.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import PrintTabulationSheet from '../../components/PrintTabulationSheet.vue';
 import ResultTable from '../../components/ResultTable.vue';
@@ -93,7 +99,7 @@ const loading = ref(true);
 const error = ref('');
 const confirmFinalLock = ref(false);
 
-const titleLabels = ['👑 TITLE WINNER', '🥈 1st Runner Up', '🥉 2nd Runner Up', '4th Place', '5th Place'];
+const titleLabels = ['Title Winner', '1st Runner Up', '2nd Runner Up', '4th Place', '5th Place'];
 
 const columns = [
   { title: 'Rank', field: 'rank', sorter: 'number', width: 70 },

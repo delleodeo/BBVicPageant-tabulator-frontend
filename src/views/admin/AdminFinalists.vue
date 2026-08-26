@@ -3,17 +3,19 @@
     <section class="panel panel-gold">
       <div class="section-head">
         <div>
-          <span class="eyebrow">👑 Official Finalist Roster</span>
+          <span class="eyebrow"><AppIcon name="finalists" /> Official Finalist Roster</span>
           <h2>Top 5 Finalists</h2>
           <p class="section-subhead">Automatically advanced from certified Round 1 rankings</p>
         </div>
 
         <div class="button-row">
           <RouterLink to="/stage" target="_blank" class="btn btn-gold">
-            👑 Launch Finalists Stage Reveal Screen
+            <AppIcon name="stage" />
+            Launch Finalists Stage Reveal Screen
           </RouterLink>
           <RouterLink to="/admin/final-round" class="btn btn-primary">
-            Go to Final Round Tabulation →
+            Go to Final Round Tabulation
+            <AppIcon name="arrowRight" />
           </RouterLink>
         </div>
       </div>
@@ -24,7 +26,7 @@
     <section v-else-if="finalists.length > 0" class="card-grid">
       <article v-for="(finalist, index) in finalists" :key="finalist._id" class="entity-card finalist-highlight-card">
         <div class="finalist-rank-badge">
-          <span class="crown-icon">{{ index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : '⭐' }}</span>
+          <span class="crown-icon"><AppIcon :name="index === 0 ? 'finalists' : index < 3 ? 'awards' : 'roundOne'" /></span>
           <span>Rank {{ index + 1 }} Qualifier</span>
         </div>
 
@@ -38,7 +40,7 @@
 
         <div class="finalist-info">
           <h3>#{{ finalist.contestantId?.contestantNumber }} {{ finalist.contestantId?.name }}</h3>
-          <p v-if="finalist.contestantId?.hometown" class="finalist-hometown">📍 {{ finalist.contestantId.hometown }}</p>
+          <p v-if="finalist.contestantId?.hometown" class="finalist-hometown">{{ finalist.contestantId.hometown }}</p>
           <p v-if="finalist.contestantId?.advocacy" class="finalist-advocacy">"{{ finalist.contestantId.advocacy }}"</p>
         </div>
 
@@ -61,6 +63,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import EmptyState from '../../components/EmptyState.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -100,6 +103,11 @@ onMounted(async () => {
   font-weight: 800;
   color: var(--gold-dark);
   text-transform: uppercase;
+}
+
+.crown-icon .app-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .finalist-info h3 {
