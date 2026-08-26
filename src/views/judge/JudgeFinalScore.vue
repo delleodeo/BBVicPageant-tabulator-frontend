@@ -1,10 +1,10 @@
 <template>
   <JudgeLayout :title="finalist ? `#${finalist.contestantId.contestantNumber} ${finalist.contestantId.name}` : 'Final Score'">
     <!-- Top Action Bar -->
-    <div class="judge-scoring-topbar">
-      <RouterLink class="btn btn-ghost btn-sm" to="/judge/final">
+    <div class="judge-scoring-topbar final-nav-bar">
+      <RouterLink class="btn btn-ghost btn-sm nav-back-btn" to="/judge/final">
         <AppIcon name="arrowLeft" />
-        Back
+        Finalists
       </RouterLink>
 
       <div class="top-nav-steppers">
@@ -43,7 +43,7 @@
 
     <template v-else>
       <!-- Finalist Header Banner -->
-      <section class="panel panel-gold candidate-scoring-header">
+      <section class="panel panel-gold candidate-scoring-header final-scoring-header">
         <div class="candidate-header-left">
           <div class="header-photo-wrap" @click="showBioModal = true">
             <img v-if="finalist.contestantId.photo" :src="mediaUrl(finalist.contestantId.photo)" :alt="finalist.contestantId.name" />
@@ -53,25 +53,43 @@
           </div>
 
           <div class="candidate-copy">
-            <div class="eyebrow"><AppIcon name="finalists" /> Finalist Candidate #{{ finalist.contestantId.contestantNumber }}</div>
+            <div class="finalist-kicker-row">
+              <span class="finalist-rank-chip">
+                <AppIcon name="finalists" />
+                Finalist Candidate
+              </span>
+              <span class="candidate-number-chip">#{{ finalist.contestantId.contestantNumber }}</span>
+            </div>
             <h2>{{ finalist.contestantId.name }}</h2>
             <p v-if="finalist.contestantId.hometown" class="c-hometown">
               <AppIcon name="mapPin" />
               {{ finalist.contestantId.hometown }}
             </p>
-            <div class="r1-carryover-badge">
-              <span>Round 1 Carry-over (20%):</span>
-              <strong>{{ fmt(roundOne?.total) }} pts</strong>
-              <small>({{ ((roundOne?.total || 0) * 0.2).toFixed(2) }} weighted)</small>
+            <div class="final-score-metrics">
+              <div>
+                <span>Round 1 Total</span>
+                <strong>{{ fmt(roundOne?.total) }}</strong>
+                <small>Raw score</small>
+              </div>
+              <div>
+                <span>Carry-over</span>
+                <strong>{{ roundOneCarryOver }}</strong>
+                <small>20% weighted</small>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="total-score-card">
-          <span class="total-label">Projected Score</span>
+        <div class="total-score-card final-total-card">
+          <span class="total-label">Final Projected Score</span>
           <div class="total-number-display">
             <span class="score-bold">{{ totalCalculatedFinalScore }}</span>
             <span class="score-max">/ 100</span>
+          </div>
+          <div class="final-score-breakdown">
+            <span>R1 20%</span>
+            <span>Q&A 40%</span>
+            <span>Beauty 40%</span>
           </div>
           <div class="completion-pill" :class="{ complete: isAllScored }">
             <AppIcon v-if="isAllScored" name="check" />
@@ -201,6 +219,8 @@ const isAllScored = computed(() => {
   return score.value?.intelligence != null && score.value?.beauty != null;
 });
 
+const roundOneCarryOver = computed(() => `${((Number(roundOne.value?.total) || 0) * 0.2).toFixed(2)} pts`);
+
 function categoryScored(categoryKey) {
   return score.value?.[categoryKey] !== undefined && score.value?.[categoryKey] !== null;
 }
@@ -326,10 +346,25 @@ onBeforeUnmount(() => {
   margin-bottom: 1rem;
 }
 
+.final-nav-bar {
+  position: relative;
+  z-index: 2;
+}
+
+.nav-back-btn {
+  min-width: 0;
+  padding-inline: 0.75rem;
+}
+
 .top-nav-steppers {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
+}
+
+.top-nav-steppers .btn {
+  min-width: 0;
+  padding-inline: 0.55rem;
 }
 
 .candidate-scoring-header {
@@ -340,16 +375,26 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-md);
 }
 
+.final-scoring-header {
+  gap: 0.9rem;
+  padding: 0.9rem;
+  overflow: hidden;
+  border-color: rgba(201, 154, 46, 0.45);
+  background:
+    linear-gradient(135deg, rgba(201, 154, 46, 0.12), transparent 38%),
+    linear-gradient(180deg, var(--surface) 0%, var(--surface-hover) 100%);
+}
+
 .candidate-header-left {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: flex-start;
+  align-items: center;
   gap: 0.85rem;
 }
 
 .header-photo-wrap {
-  width: 58px;
-  height: 72px;
+  width: 68px;
+  height: 84px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 2px solid var(--gold);
@@ -378,21 +423,63 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.candidate-copy .eyebrow {
+.finalist-kicker-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.finalist-rank-chip,
+.candidate-number-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.7rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-full);
   font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.finalist-rank-chip {
+  color: var(--gold-dark);
+  background: var(--gold-soft);
+  border: 1px solid var(--border-gold);
+}
+
+[data-theme='dark'] .finalist-rank-chip {
+  color: var(--gold-light);
+  background: rgba(201, 154, 46, 0.13);
+}
+
+.finalist-rank-chip .app-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.candidate-number-chip {
+  color: var(--text-main);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .candidate-copy h2 {
-  font-size: clamp(1.35rem, 7vw, 1.9rem);
-  line-height: 1.05;
-  word-break: break-word;
+  margin-top: 0.45rem;
+  font-size: clamp(1.25rem, 5.8vw, 2rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .c-hometown {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.85rem;
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
   color: var(--gold-dark);
   font-weight: 700;
 }
@@ -402,28 +489,50 @@ onBeforeUnmount(() => {
   height: 1rem;
 }
 
-.r1-carryover-badge {
+.final-score-metrics {
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.2rem 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
   width: 100%;
-  max-width: 280px;
-  font-size: 0.74rem;
+  max-width: 21rem;
+  margin-top: 0.75rem;
+}
+
+.final-score-metrics div {
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-md);
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 0.5rem 0.7rem;
-  border-radius: var(--radius-md);
-  margin-top: 0.55rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.r1-carryover-badge strong {
-  color: var(--gold-dark);
+.final-score-metrics span,
+.final-score-metrics small {
+  display: block;
 }
 
-.r1-carryover-badge small {
-  grid-column: 1 / -1;
+.final-score-metrics span {
   color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.final-score-metrics strong {
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.final-score-metrics small {
+  margin-top: 0.05rem;
+  color: var(--gold-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 
 .total-score-card {
@@ -438,23 +547,36 @@ onBeforeUnmount(() => {
   box-shadow: var(--shadow-sm);
 }
 
+.final-total-card {
+  align-items: stretch;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  background:
+    linear-gradient(180deg, rgba(201, 154, 46, 0.08), transparent),
+    var(--surface);
+}
+
 .total-label {
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.04em;
 }
 
 .total-number-display {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.35rem;
 }
 
 .score-bold {
-  font-size: clamp(1.65rem, 9vw, 2.25rem);
+  font-size: clamp(2rem, 11vw, 2.65rem);
   font-weight: 900;
   color: var(--gold-dark);
+  line-height: 1;
 }
 
 .score-max {
@@ -463,9 +585,28 @@ onBeforeUnmount(() => {
   color: var(--text-muted);
 }
 
+.final-score-breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.final-score-breakdown span {
+  min-width: 0;
+  padding: 0.3rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .completion-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.3rem;
   max-width: 100%;
   font-size: 0.7rem;
@@ -547,7 +688,11 @@ onBeforeUnmount(() => {
   .candidate-scoring-header {
     grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
     align-items: center;
-    padding: 1.35rem;
+    padding: 1rem;
+  }
+
+  .final-scoring-header {
+    gap: 1rem;
   }
 
   .score-progress-strip {
@@ -557,6 +702,36 @@ onBeforeUnmount(() => {
   .scoring-footer-nav .button-row {
     display: flex;
     justify-content: space-between;
+  }
+}
+
+@media (min-width: 980px) {
+  .candidate-scoring-header {
+    padding: 1.25rem;
+  }
+
+  .header-photo-wrap {
+    width: 78px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 380px) {
+  .judge-scoring-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .candidate-header-left {
+    grid-template-columns: 1fr;
+  }
+
+  .header-photo-wrap {
+    width: 76px;
+    height: 92px;
+  }
+
+  .final-score-metrics {
+    max-width: none;
   }
 }
 </style>

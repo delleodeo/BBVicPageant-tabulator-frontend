@@ -145,18 +145,69 @@ const error = ref('');
 const confirmLock = ref(false);
 const confirmUnlock = ref(false);
 
+function makeCell(className, text) {
+  const cell = document.createElement('span');
+  cell.className = className;
+  cell.textContent = text ?? '';
+  return cell;
+}
+
+function rankFormatter(cell) {
+  const rank = cell.getValue();
+  const wrap = document.createElement('span');
+  wrap.className = 'rank-cell';
+  const medal = document.createElement('span');
+  medal.className = `rank-medal ${Number(rank) <= 5 ? 'top' : ''}`;
+  medal.textContent = rank;
+  wrap.appendChild(medal);
+  return wrap;
+}
+
+function candidateFormatter(cell) {
+  const row = cell.getRow().getData();
+  const wrap = document.createElement('div');
+  wrap.className = 'candidate-cell';
+  const name = document.createElement('strong');
+  name.textContent = row.name;
+  const meta = document.createElement('small');
+  meta.textContent = `Candidate #${row.number}`;
+  wrap.append(name, meta);
+  return wrap;
+}
+
+function scoreFormatter(cell) {
+  return makeCell('score-cell', cell.getValue());
+}
+
+function totalFormatter(cell) {
+  return makeCell('total-cell', cell.getValue());
+}
+
+function statusFormatter(cell) {
+  const value = String(cell.getValue() || '').toLowerCase();
+  const pill = makeCell(`status-pill ${value === 'finalist' ? 'finalist' : 'eliminated'}`, cell.getValue());
+  return pill;
+}
+
 const columns = [
-  { title: 'Rank', field: 'rank', sorter: 'number', width: 70 },
-  { title: '#', field: 'number', width: 60 },
-  { title: 'Candidate Name', field: 'name', headerFilter: 'input', width: 180 },
-  { title: 'Hometown', field: 'hometown', headerFilter: 'input', width: 140 },
-  { title: 'Prod (10%)', field: 'production' },
-  { title: 'Swim (10%)', field: 'swimsuit' },
-  { title: 'Costume (30%)', field: 'festival' },
-  { title: 'Gown (20%)', field: 'gown' },
-  { title: 'B&I (30%)', field: 'beauty' },
-  { title: 'Weighted Total', field: 'total', sorter: 'number', width: 130 },
-  { title: 'Status', field: 'status', headerFilter: 'input' }
+  { title: 'Rank', field: 'rank', sorter: 'number', width: 78, hozAlign: 'center', formatter: rankFormatter },
+  { title: '#', field: 'number', width: 62, hozAlign: 'center', formatter: (cell) => makeCell('number-cell', `#${cell.getValue()}`) },
+  {
+    title: 'Candidate',
+    field: 'name',
+    headerFilter: 'input',
+    headerFilterPlaceholder: 'Search name',
+    minWidth: 180,
+    formatter: candidateFormatter
+  },
+  { title: 'Hometown', field: 'hometown', headerFilter: 'input', headerFilterPlaceholder: 'Search town', minWidth: 135 },
+  { title: 'Prod 10%', field: 'production', hozAlign: 'right', width: 108, formatter: scoreFormatter },
+  { title: 'Swim 10%', field: 'swimsuit', hozAlign: 'right', width: 108, formatter: scoreFormatter },
+  { title: 'Costume 30%', field: 'festival', hozAlign: 'right', width: 124, formatter: scoreFormatter },
+  { title: 'Gown 20%', field: 'gown', hozAlign: 'right', width: 112, formatter: scoreFormatter },
+  { title: 'B&I 30%', field: 'beauty', hozAlign: 'right', width: 108, formatter: scoreFormatter },
+  { title: 'Total', field: 'total', sorter: 'number', hozAlign: 'right', width: 112, formatter: totalFormatter },
+  { title: 'Status', field: 'status', headerFilter: 'input', headerFilterPlaceholder: 'Filter', width: 132, formatter: statusFormatter }
 ];
 
 const printColumns = [

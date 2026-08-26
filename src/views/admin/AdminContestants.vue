@@ -95,13 +95,17 @@
               <AppIcon name="mapPin" />
               {{ c.hometown }}
             </p>
+            <StatusBadge
+              class="candidate-status-inline"
+              :label="c.status"
+              :tone="c.status === 'FINALIST' ? 'success' : c.status === 'ELIMINATED' ? 'warning' : 'neutral'"
+            />
           </div>
         </div>
 
         <p class="c-advocacy-snippet">{{ c.advocacy || 'No advocacy added yet.' }}</p>
 
         <div class="entity-footer">
-          <StatusBadge :label="c.status" :tone="c.status === 'FINALIST' ? 'success' : 'neutral'" />
           <div class="button-row">
             <button type="button" class="btn btn-ghost btn-sm" @click="edit(c)">
               <AppIcon name="pencil" />
@@ -593,19 +597,21 @@ onMounted(load);
 
 .admin-contestants-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1rem;
 }
 
 .admin-contestants-grid .entity-card {
   display: flex;
   flex-direction: column;
-  min-height: 235px;
+  min-height: 250px;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  background:
+    linear-gradient(135deg, rgba(201, 154, 46, 0.08), transparent 42%),
+    var(--surface);
+  box-shadow: var(--shadow-md);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
@@ -617,22 +623,24 @@ onMounted(load);
 
 .contestant-card-top {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 0.85rem;
 }
 
 .admin-candidate-photo {
-  width: 64px;
-  height: 64px;
-  flex: 0 0 64px;
+  width: 72px;
+  height: 78px;
+  flex: 0 0 72px;
   display: grid;
   place-items: center;
   overflow: hidden;
   border-radius: var(--radius-md);
-  background: var(--navy);
+  border: 1px solid var(--border-gold);
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
   color: var(--gold-light);
   font-size: 1.05rem;
   font-weight: 900;
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-candidate-photo img {
@@ -644,29 +652,40 @@ onMounted(load);
 .entity-info {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
+  padding-top: 0.1rem;
 }
 
 .c-number-badge {
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: var(--radius-full);
+  background: rgba(201, 154, 46, 0.12);
+  border: 1px solid var(--border-gold);
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--gold-dark);
 }
 
 .c-title {
+  margin-top: 0.25rem;
   font-size: 1rem;
-  font-weight: 800;
-  line-height: 1.15;
-  word-break: break-word;
+  font-weight: 900;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
 }
 
 .c-hometown {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  margin-top: 0.18rem;
   font-size: 0.8rem;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .c-hometown .app-icon {
@@ -674,16 +693,37 @@ onMounted(load);
   height: 0.9rem;
 }
 
+.candidate-status-inline {
+  margin-top: 0.55rem;
+}
+
+.candidate-status-inline.warning {
+  background: var(--warning-soft);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+[data-theme='dark'] .candidate-status-inline.warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
 .c-advocacy-snippet {
-  min-height: 2.5rem;
+  min-height: 3.1rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(148, 163, 184, 0.06);
   font-size: 0.8rem;
   color: var(--text-muted);
   font-style: italic;
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin: 0.75rem 0;
+  margin: 0.85rem 0;
 }
 
 .photo-upload-preview {
@@ -716,22 +756,38 @@ onMounted(load);
 }
 
 .entity-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
+  display: block;
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   margin-top: auto;
 }
 
 .entity-footer .button-row {
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  width: 100%;
 }
 
 .entity-footer .btn {
-  min-height: 34px;
-  padding: 0.45rem 0.65rem;
+  min-height: 38px;
+  padding: 0.5rem 0.65rem;
+  width: 100%;
+}
+
+[data-theme='dark'] .admin-contestants-grid .entity-card {
+  background:
+    linear-gradient(135deg, rgba(201, 154, 46, 0.1), transparent 42%),
+    #0f1c2e;
+}
+
+[data-theme='dark'] .c-number-badge {
+  color: var(--gold-light);
+}
+
+[data-theme='dark'] .c-advocacy-snippet {
+  background: rgba(255, 255, 255, 0.035);
+  color: #cbd5e1;
 }
 
 .form-row-2 {
@@ -775,7 +831,7 @@ onMounted(load);
 
 @media (min-width: 1500px) {
   .admin-contestants-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
 </style>

@@ -1,7 +1,27 @@
 import axios from 'axios';
 
+const localHosts = new Set(['localhost', '127.0.0.1']);
+
+function isLocalHost(hostname) {
+  return localHosts.has(hostname);
+}
+
+function resolveApiBaseURL() {
+  const configuredBaseURL = import.meta.env.VITE_API_URL;
+
+  if (configuredBaseURL) {
+    const parsed = new URL(configuredBaseURL, window.location.origin);
+    if (!import.meta.env.DEV && isLocalHost(parsed.hostname) && !isLocalHost(window.location.hostname)) {
+      return '/api';
+    }
+    return configuredBaseURL;
+  }
+
+  return import.meta.env.DEV ? 'http://localhost:5000/api' : '/api';
+}
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api')
+  baseURL: resolveApiBaseURL()
 });
 
 const apiOrigin = new URL(api.defaults.baseURL, window.location.origin).origin;
@@ -19,7 +39,7 @@ export function mediaUrl(value) {
 
   try {
     const parsed = new URL(value);
-    if (['localhost', '127.0.0.1'].includes(parsed.hostname) && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    if (isLocalHost(parsed.hostname) && !isLocalHost(window.location.hostname)) {
       return `${apiOrigin}${parsed.pathname}`;
     }
   } catch {
