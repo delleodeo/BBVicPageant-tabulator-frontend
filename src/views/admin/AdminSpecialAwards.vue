@@ -1,5 +1,99 @@
 <template>
   <AdminLayout title="Special & Minor Awards">
+    <section class="awards-print-summary" aria-label="Printable awards summary">
+      <header class="print-awards-header">
+        <p>{{ printDate }}</p>
+        <h1>Special & Minor Awards Summary</h1>
+        <span>Official tabulation record</span>
+      </header>
+
+      <section class="print-awards-section">
+        <div class="print-section-title">
+          <h2>Official Category Awards</h2>
+          <p>Computed from Round 1 judge score averages</p>
+        </div>
+
+        <table class="print-awards-table">
+          <thead>
+            <tr>
+              <th>Award</th>
+              <th>Winner</th>
+              <th>Hometown</th>
+              <th>Average</th>
+              <th>Top 3 Candidates</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="award in data.categoryAwards || []" :key="`print-${award.key}`">
+              <td>
+                <strong>{{ award.title }}</strong>
+                <span>{{ award.categoryLabel }} - {{ award.weight }}%</span>
+              </td>
+              <td>{{ award.winner ? `#${award.winner.contestantNumber} ${award.winner.name}` : 'Awaiting scoring' }}</td>
+              <td>{{ award.winner?.hometown || '-' }}</td>
+              <td>{{ award.winner ? `${award.topScore} / 10.0 (${award.topScore100}%)` : '-' }}</td>
+              <td>
+                <ol v-if="award.rankings?.length">
+                  <li v-for="r in award.rankings.slice(0, 3)" :key="`print-rank-${award.key}-${r.contestant?._id}`">
+                    #{{ r.contestant?.contestantNumber }} {{ r.contestant?.name }} - {{ r.average ?? '-' }}
+                  </li>
+                </ol>
+                <span v-else>-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="print-awards-section">
+        <div class="print-section-title">
+          <h2>Custom & Sponsor Special Awards</h2>
+          <p>Manually assigned sponsor and minor awards</p>
+        </div>
+
+        <table class="print-awards-table">
+          <thead>
+            <tr>
+              <th>Award</th>
+              <th>Sponsor</th>
+              <th>Description</th>
+              <th>Winner</th>
+              <th>Hometown</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="award in data.customAwards || []" :key="`print-custom-${award._id}`">
+              <td><strong>{{ award.title }}</strong></td>
+              <td>{{ award.sponsor || '-' }}</td>
+              <td>{{ award.description || '-' }}</td>
+              <td>
+                <span v-if="award.winnerDetails || award.winnerContestantId">
+                  #{{ award.winnerDetails?.contestantNumber || award.winnerContestantId?.contestantNumber }}
+                  {{ award.winnerDetails?.name || award.winnerContestantId?.name }}
+                </span>
+                <span v-else>Winner not yet assigned</span>
+              </td>
+              <td>{{ award.winnerContestantId?.hometown || '-' }}</td>
+            </tr>
+            <tr v-if="!data.customAwards?.length">
+              <td colspan="5">No custom special awards added.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer class="print-awards-footer">
+        <div>
+          <span></span>
+          <strong>Prepared by Tabulation Committee</strong>
+        </div>
+        <div>
+          <span></span>
+          <strong>Reviewed and Certified</strong>
+        </div>
+      </footer>
+    </section>
+
     <!-- Header Summary -->
     <section class="panel panel-gold">
       <div class="section-head">
@@ -180,7 +274,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -192,6 +286,15 @@ const data = ref({ categoryAwards: [], customAwards: [] });
 const contestants = ref([]);
 const showModal = ref(false);
 const editingAwardId = ref(null);
+const printDate = computed(() =>
+  new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(new Date())
+);
 
 const form = reactive({
   title: '',
@@ -256,6 +359,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.awards-print-summary {
+  display: none;
+}
+
 .awards-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -442,6 +549,211 @@ onMounted(() => {
 @media (min-width: 760px) {
   .awards-grid {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  :global(.sidebar),
+  :global(.topbar),
+  :global(.mobile-nav),
+  :global(.modal-backdrop),
+  :global(.panel),
+  :global(.btn),
+  :global(.button-row) {
+    display: none !important;
+  }
+
+  :global(.app-shell),
+  :global(.main-panel) {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+
+  .awards-print-summary {
+    display: block;
+    width: 100%;
+    color: #111827;
+    background: #fff;
+    font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.35;
+  }
+
+  .print-awards-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 6mm;
+    padding-bottom: 5mm;
+    margin-bottom: 5mm;
+    border-bottom: 2px solid #c99a2e;
+  }
+
+  .print-awards-header p {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: #6b7280;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .print-awards-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 18pt;
+    font-weight: 900;
+    line-height: 1.05;
+  }
+
+  .print-awards-header span {
+    align-self: center;
+    color: #996515;
+    font-size: 8pt;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .print-awards-section {
+    break-inside: avoid;
+    margin-bottom: 7mm;
+  }
+
+  .print-section-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6mm;
+    margin-bottom: 2.5mm;
+  }
+
+  .print-section-title h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 12pt;
+    font-weight: 900;
+  }
+
+  .print-section-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 8pt;
+    font-weight: 700;
+  }
+
+  .print-awards-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #cbd5e1;
+  }
+
+  .print-awards-table th,
+  .print-awards-table td {
+    padding: 2.4mm 2.8mm;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+    color: #111827;
+    overflow-wrap: anywhere;
+  }
+
+  .print-awards-table th {
+    background: #0f1c2e;
+    color: #fff;
+    font-size: 7.4pt;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .print-awards-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .print-awards-table strong {
+    display: block;
+    color: #0f172a;
+    font-weight: 900;
+  }
+
+  .print-awards-table td span {
+    display: block;
+    margin-top: 0.7mm;
+    color: #64748b;
+    font-size: 7.4pt;
+    font-weight: 700;
+  }
+
+  .print-awards-table ol {
+    margin: 0;
+    padding-left: 4mm;
+  }
+
+  .print-awards-table li {
+    margin: 0 0 0.8mm;
+    padding-left: 0.5mm;
+  }
+
+  .print-awards-table li:last-child {
+    margin-bottom: 0;
+  }
+
+  .print-awards-table th:nth-child(1) {
+    width: 23%;
+  }
+
+  .print-awards-table th:nth-child(2) {
+    width: 23%;
+  }
+
+  .print-awards-table th:nth-child(3) {
+    width: 16%;
+  }
+
+  .print-awards-table th:nth-child(4) {
+    width: 16%;
+  }
+
+  .print-awards-table th:nth-child(5) {
+    width: 22%;
+  }
+
+  .print-awards-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16mm;
+    margin-top: 12mm;
+    break-inside: avoid;
+  }
+
+  .print-awards-footer div {
+    text-align: center;
+  }
+
+  .print-awards-footer span {
+    display: block;
+    height: 12mm;
+    border-bottom: 1px solid #111827;
+  }
+
+  .print-awards-footer strong {
+    display: block;
+    margin-top: 2mm;
+    color: #111827;
+    font-size: 8pt;
+    font-weight: 800;
+    text-transform: uppercase;
   }
 }
 </style>
