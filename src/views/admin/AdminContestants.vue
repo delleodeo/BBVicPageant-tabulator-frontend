@@ -218,7 +218,7 @@
           </label>
 
           <label>
-            Upload Candidate Photo
+            Upload Candidate Photo (max 15 MB)
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
@@ -308,6 +308,7 @@ const showModal = ref(false);
 const showBulkImportModal = ref(false);
 const bulkCsvText = ref('');
 const photoUpload = reactive({ uploading: false, error: '' });
+const MAX_CANDIDATE_PHOTO_BYTES = 15 * 1024 * 1024;
 
 const form = reactive({
   _id: '',
@@ -374,6 +375,12 @@ async function handlePhotoFileChange(event) {
   const file = event.target.files?.[0];
   if (!file) return;
 
+  if (file.size > MAX_CANDIDATE_PHOTO_BYTES) {
+    photoUpload.error = 'Image file must be 15 MB or smaller.';
+    event.target.value = '';
+    return;
+  }
+
   photoUpload.uploading = true;
   photoUpload.error = '';
 
@@ -384,7 +391,9 @@ async function handlePhotoFileChange(event) {
     const { data } = await api.post('/uploads/contestant-photo', payload);
     form.photo = data.path || data.url;
   } catch (err) {
-    photoUpload.error = err.response?.data?.message || 'Unable to upload image.';
+    photoUpload.error = err.response?.status === 413
+      ? 'Upload rejected as too large. Photos must be 15 MB or smaller; if this file is under 15 MB, the server request-size limit also needs to be increased.'
+      : err.response?.data?.message || 'Unable to upload image.';
   } finally {
     photoUpload.uploading = false;
     event.target.value = '';
