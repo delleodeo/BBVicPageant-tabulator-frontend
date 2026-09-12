@@ -804,68 +804,6 @@ input:focus, select:focus, textarea:focus {
   border-left-color: var(--danger);
 }
 
-/* Stage & Projector Presentation Mode Styles */
-.stage-screen {
-  min-height: 100vh;
-  background: radial-gradient(circle at center, #10233f 0%, #070d18 85%);
-  color: #ffffff;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.stage-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.stage-title {
-  font-family: 'Cinzel', serif;
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  background: linear-gradient(135deg, #ffffff 0%, #e5c158 50%, #c99a2e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.stage-subtitle {
-  font-size: clamp(1rem, 2vw, 1.4rem);
-  color: var(--gold-light);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
-.stage-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
-  width: 100%;
-  max-width: 1200px;
-}
-
-.stage-finalist-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(201, 154, 46, 0.4);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  text-align: center;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stage-finalist-card.revealed {
-  border-color: var(--gold);
-  background: linear-gradient(180deg, rgba(201, 154, 46, 0.2) 0%, rgba(13, 27, 42, 0.8) 100%);
-  transform: scale(1.05);
-  box-shadow: 0 0 35px var(--gold-glow);
-}
-
 .mobile-nav {
   position: fixed;
   bottom: 0;

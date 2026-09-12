@@ -75,7 +75,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 
 const props = defineProps({
   judges: { type: Array, default: () => [] },
@@ -105,25 +104,24 @@ function findScore(judgeId, contestantId) {
 function isContestantJudgeComplete(judgeId, contestantId) {
   const score = findScore(judgeId, contestantId);
   if (!score) return false;
-  if (props.categories && props.categories.length) {
-    return props.categories.every((c) => score[c.key] !== undefined && score[c.key] !== null);
-  }
-  return score.productionOutfit != null && score.swimsuit != null && score.festivalCostume != null && score.eveningGown != null && score.beautyIntelligence != null;
+  return props.categories.length > 0 && props.categories.every((category) => score[category.key] != null);
 }
 
 function hasPartialScores(judgeId, contestantId) {
   const score = findScore(judgeId, contestantId);
   if (!score) return false;
-  return Object.keys(score).some((k) => typeof score[k] === 'number');
+  return props.categories.some((category) => typeof score[category.key] === 'number');
 }
 
 function getJudgeContestantTotal(judgeId, contestantId) {
   const score = findScore(judgeId, contestantId);
   if (!score) return '-';
-  const vals = props.categories.map((c) => score[c.key]).filter((v) => typeof v === 'number');
-  if (!vals.length) return '-';
-  const avg = vals.reduce((sum, v) => sum + v, 0) / vals.length;
-  return (avg * 10).toFixed(1);
+  const scoredCategories = props.categories.filter((category) => typeof score[category.key] === 'number');
+  if (!scoredCategories.length) return '-';
+  return scoredCategories.reduce(
+    (total, category) => total + Number(score[category.key]) * (Number(category.weight) / 10),
+    0
+  ).toFixed(1);
 }
 
 function getCellStatusClass(judgeId, contestantId) {
@@ -360,4 +358,3 @@ function getContestantCompletionCount(contestantId) {
   50% { background: #dbeafe; }
 }
 </style>
-

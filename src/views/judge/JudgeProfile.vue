@@ -126,12 +126,14 @@ import AppIcon from '../../components/AppIcon.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
 import { api } from '../../services/api.js';
 import { useAuthStore } from '../../stores/auth.js';
-import { roundOneCategories } from '../../utils/score.js';
+import { finalCategories, roundOneCategories } from '../../utils/score.js';
 
 const auth = useAuthStore();
 const router = useRouter();
 const r1Data = ref({});
 const finalData = ref({});
+const activeRoundOneCategories = computed(() => r1Data.value.categories?.length ? r1Data.value.categories : roundOneCategories);
+const activeFinalCategories = computed(() => finalData.value.categories?.length ? finalData.value.categories : finalCategories);
 const isDark = ref(false);
 
 const totalContestants = computed(() => r1Data.value.contestants?.length || 0);
@@ -140,12 +142,12 @@ const finalTargetCount = computed(() => finalData.value.finalists?.length || 5);
 const r1ScoresCount = computed(() => {
   return (r1Data.value.contestants || []).filter((c) => {
     const s = (r1Data.value.scores || []).find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(c._id));
-    return roundOneCategories.every((cat) => s?.[cat.key] != null);
+    return activeRoundOneCategories.value.every((cat) => s?.[cat.key] != null);
   }).length;
 });
 
 const finalScoresCount = computed(() => {
-  return (finalData.value.scores || []).filter((s) => s.intelligence != null && s.beauty != null).length;
+  return (finalData.value.scores || []).filter((s) => activeFinalCategories.value.every((cat) => s?.[cat.key] != null)).length;
 });
 
 const r1CompletionPercent = computed(() => {
@@ -165,7 +167,7 @@ const overallProgress = computed(() => {
 const myAllScores = computed(() => {
   const scores = [];
   for (const s of r1Data.value.scores || []) {
-    for (const cat of roundOneCategories) {
+    for (const cat of activeRoundOneCategories.value) {
       if (s[cat.key] != null && Number.isFinite(Number(s[cat.key]))) {
         scores.push(Number(s[cat.key]));
       }

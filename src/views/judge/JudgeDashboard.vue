@@ -92,7 +92,7 @@
       <div class="section-head judge-section-head">
         <div>
           <h2>Final Round Criteria</h2>
-          <p class="section-subhead">Formula: Round 1 (20%) + Final Intelligence (40%) + Final Beauty (40%)</p>
+          <p class="section-subhead">Formula: {{ finalFormula }}</p>
         </div>
         <RouterLink
           class="btn btn-sm"
@@ -112,18 +112,11 @@
             <span class="crit-sub">Transferred automatically from locked R1</span>
           </div>
         </div>
-        <div class="criteria-pill-card">
-          <div class="crit-weight">40%</div>
+        <div v-for="cat in finalCategories" :key="cat.key" class="criteria-pill-card">
+          <div class="crit-weight">{{ cat.weight }}%</div>
           <div class="crit-info">
-            <span class="crit-label">Final Intelligence & Q&A</span>
-            <span class="crit-sub">Clarity, eloquence, articulation</span>
-          </div>
-        </div>
-        <div class="criteria-pill-card">
-          <div class="crit-weight">40%</div>
-          <div class="crit-info">
-            <span class="crit-label">Final Beauty & Charisma</span>
-            <span class="crit-sub">Stage presence, regal aura</span>
+            <span class="crit-label">{{ cat.label }}</span>
+            <span class="crit-sub">Score range: 0.0 - 10.0</span>
           </div>
         </div>
       </div>
@@ -138,17 +131,23 @@ import ScoreSummary from '../../components/ScoreSummary.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
 import { api } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
-import { roundOneCategories } from '../../utils/score.js';
+import { finalCategories as defaultFinalCategories, roundOneCategories as defaultRoundOneCategories } from '../../utils/score.js';
 
 const roundOne = ref({});
 const final = ref({});
+const roundOneCategories = computed(() => roundOne.value.categories?.length ? roundOne.value.categories : defaultRoundOneCategories);
+const finalCategories = computed(() => final.value.categories?.length ? final.value.categories : defaultFinalCategories);
+const finalFormula = computed(() => [
+  'Round 1 (20%)',
+  ...finalCategories.value.map((category) => `${category.label} (${category.weight}%)`)
+].join(' + '));
 
 const completeCount = computed(() =>
   (roundOne.value.contestants || []).filter((contestant) => {
     const score = (roundOne.value.scores || []).find(
       (entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestant._id)
     );
-    return roundOneCategories.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
+    return roundOneCategories.value.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
   }).length
 );
 
@@ -168,7 +167,7 @@ const nextPendingRoundOneContestant = computed(() => {
     const score = (roundOne.value.scores || []).find(
       (entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestant._id)
     );
-    return !roundOneCategories.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
+    return !roundOneCategories.value.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
   });
 });
 
@@ -178,7 +177,7 @@ const nextPendingFinalist = computed(() => {
     const score = (final.value.scores || []).find(
       (entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId)
     );
-    return score?.intelligence == null || score?.beauty == null;
+    return !finalCategories.value.every((category) => score?.[category.key] != null);
   });
 });
 
@@ -199,7 +198,7 @@ const nextAction = computed(() => {
       icon: 'finalists',
       eyebrow: 'Continue Final Round',
       title: `Finalist #${nextPendingFinalist.value.contestantId.contestantNumber}`,
-      description: 'Finish intelligence and beauty scoring for the next finalist.',
+      description: 'Finish the remaining Final Round criteria for the next finalist.',
       cta: 'Continue Finals',
       to: `/judge/final/${nextPendingFinalist.value.contestantId._id}`
     };
@@ -217,7 +216,7 @@ const activeRoundTitle = computed(() => {
 
 const activeRoundDescription = computed(() => {
   if (final.value.round?.status === 'OPEN') {
-    return 'Please submit your ratings for the Top 5 finalists on Final Intelligence & Beauty.';
+    return 'Please submit your ratings for every Final Round criterion.';
   }
   if (roundOne.value.round?.status === 'OPEN') {
     return `You have completed ${completeCount.value} of ${roundOne.value.contestants?.length || 0} candidate score sheets.`;
@@ -240,6 +239,7 @@ onMounted(() => {
   socket.on('round:opened', load);
   socket.on('round:locked', load);
   socket.on('finalists:generated', load);
+  socket.on('criteria:updated', load);
 });
 </script>
 

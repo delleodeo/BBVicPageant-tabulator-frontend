@@ -4,9 +4,10 @@ import 'tabulator-tables/dist/css/tabulator.min.css';
 import './assets/styles.css';
 import App from './App.vue';
 import router from './router/index.js';
+import { startScoreOutboxSync } from './services/scoreOutbox.js';
 
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.mount('#app');
-
+startScoreOutboxSync();

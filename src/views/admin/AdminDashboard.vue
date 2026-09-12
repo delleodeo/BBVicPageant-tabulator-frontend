@@ -62,15 +62,6 @@
             <AppIcon name="awards" />
             Special Awards
           </RouterLink>
-
-          <RouterLink
-            to="/stage"
-            target="_blank"
-            class="btn btn-gold"
-          >
-            <AppIcon name="stage" />
-            Open Stage Screen (Projector)
-          </RouterLink>
         </div>
       </section>
 
@@ -81,7 +72,7 @@
           :contestants="contestantsList"
           :scores="allR1Scores"
           :online-judges="onlineJudges"
-          :categories="roundOneCategories"
+          :categories="activeRoundOneCategories"
         />
       </section>
 
@@ -142,6 +133,7 @@ import { roundOneCategories } from '../../utils/score.js';
 const loading = ref(true);
 const roundOne = ref({});
 const finalResults = ref({});
+const activeRoundOneCategories = computed(() => roundOne.value.categories?.length ? roundOne.value.categories : roundOneCategories);
 const finalists = ref([]);
 const judgesList = ref([]);
 const contestantsList = ref([]);

@@ -6,7 +6,7 @@
         <div>
           <span class="eyebrow"><AppIcon name="finalists" /> Championship Phase</span>
           <h2>Grand Coronation Final Results</h2>
-          <p class="section-subhead">Formula: Round 1 (20%) + Final Intelligence (40%) + Final Beauty (40%)</p>
+          <p class="section-subhead">Formula: {{ finalFormula }}</p>
         </div>
 
         <div class="button-row">
@@ -30,10 +30,6 @@
           <button class="btn btn-ghost" type="button" @click="download('csv')">
             CSV
           </button>
-          <RouterLink to="/stage" target="_blank" class="btn btn-gold">
-            <AppIcon name="stage" />
-            Stage Mode
-          </RouterLink>
         </div>
       </div>
 
@@ -90,7 +86,7 @@ import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
-import { fmt } from '../../utils/score.js';
+import { finalCategories, fmt } from '../../utils/score.js';
 
 const data = ref({});
 const pageantData = ref(null);
@@ -101,37 +97,49 @@ const confirmFinalLock = ref(false);
 
 const titleLabels = ['Title Winner', '1st Runner Up', '2nd Runner Up', '4th Place', '5th Place'];
 
-const columns = [
+const activeCategories = computed(() => data.value.categories?.length ? data.value.categories : finalCategories);
+const finalFormula = computed(() => ['Round 1 (20%)', ...activeCategories.value.map((category) => `${category.label} (${category.weight}%)`)].join(' + '));
+
+const columns = computed(() => [
   { title: 'Rank', field: 'rank', sorter: 'number', width: 70 },
   { title: 'Official Title', field: 'titleLabel', width: 170 },
   { title: '#', field: 'number', width: 60 },
   { title: 'Finalist Name', field: 'name', headerFilter: 'input', width: 180 },
   { title: 'Round 1 (20%)', field: 'roundOne' },
-  { title: 'Intelligence (40%)', field: 'intelligence' },
-  { title: 'Beauty (40%)', field: 'beauty' },
+  ...activeCategories.value.map((category) => ({
+    title: `${category.label} (${category.weight}%)`,
+    field: `category_${category.key}`,
+    minWidth: 120
+  })),
   { title: 'Final Score', field: 'finalScore', sorter: 'number', width: 130 }
-];
+]);
 
-const printColumns = [
+const printColumns = computed(() => [
   { key: 'roundOne', label: 'Round 1 (20%)' },
-  { key: 'intelligence', label: 'Intelligence (40%)' },
-  { key: 'beauty', label: 'Beauty (40%)' }
-];
+  ...activeCategories.value.map((category) => ({
+    key: `category_${category.key}`,
+    label: `${category.label} (${category.weight}%)`
+  }))
+]);
 
 const rows = computed(() =>
-  (data.value.rankings || []).map((result, idx) => ({
-    id: result.contestant._id,
-    rank: result.rank,
-    titleLabel: titleLabels[idx] || `Finalist ${result.rank}`,
-    number: result.contestant.contestantNumber,
-    name: result.contestant.name,
-    hometown: result.contestant.hometown || '',
-    roundOne: fmt(result.roundOneTotal),
-    intelligence: fmt(result.intelligenceAverage),
-    beauty: fmt(result.beautyAverage),
-    finalScore: fmt(result.finalScore),
-    contestant: result.contestant
-  }))
+  (data.value.rankings || []).map((result, idx) => {
+    const row = {
+      id: result.contestant._id,
+      rank: result.rank,
+      titleLabel: titleLabels[idx] || `Finalist ${result.rank}`,
+      number: result.contestant.contestantNumber,
+      name: result.contestant.name,
+      hometown: result.contestant.hometown || '',
+      roundOne: fmt(result.roundOneTotal),
+      finalScore: fmt(result.finalScore),
+      contestant: result.contestant
+    };
+    for (const category of activeCategories.value) {
+      row[`category_${category.key}`] = fmt(result.categories?.find((entry) => entry.key === category.key)?.score100);
+    }
+    return row;
+  })
 );
 
 async function load() {

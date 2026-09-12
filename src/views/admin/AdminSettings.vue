@@ -6,7 +6,7 @@
         <div>
           <span class="eyebrow"><AppIcon name="settings" /> Pageant Branding</span>
           <h2>Pageant Information & Branding</h2>
-          <p class="section-subhead">These details appear on official PDF certificates, printouts, and the stage presentation screen</p>
+          <p class="section-subhead">These details appear on official PDF certificates and printouts</p>
         </div>
       </div>
 
@@ -47,62 +47,81 @@
           </label>
         </div>
 
-        <div class="form-row-2">
-          <label>
-            Logo Image URL
-            <input v-model="form.logo" placeholder="https://example.com/logo.png" />
-          </label>
-
-          <label>
-            Stage Confetti & Sound Effects
-            <select v-model="form.soundEnabled">
-              <option :value="true">Enabled (Auditorium & Fanfare)</option>
-              <option :value="false">Disabled</option>
-            </select>
-          </label>
-        </div>
+        <label>
+          Logo Image URL
+          <input v-model="form.logo" placeholder="https://example.com/logo.png" />
+        </label>
 
         <div class="button-row" style="margin-top: 1rem;">
-          <button class="btn btn-primary" type="submit">
+          <button class="btn btn-primary" type="submit" :disabled="saving">
             <AppIcon name="check" />
-            Save Pageant Settings
+            {{ saving ? 'Saving...' : 'Save Pageant Settings' }}
           </button>
         </div>
       </form>
     </section>
 
-    <!-- Official Criteria Configuration Reference -->
+    <!-- Official Criteria Configuration -->
     <section class="panel">
       <div class="section-head">
         <div>
           <h3>Official Scoring Criteria & Weight Distribution</h3>
-          <p class="section-subhead">System-enforced scoring formulas for Round 1 & Final Championship</p>
+          <p class="section-subhead">Add criteria or change their names and weights. Saved changes are used immediately in judge scoring and all calculations.</p>
         </div>
       </div>
 
+      <form class="stack-form" @submit.prevent="save">
       <div class="criteria-preview-grid">
         <div class="criteria-section-box">
           <h4>Round 1 (Preliminary Phase)</h4>
-          <ul class="criteria-list">
-            <li><span>Production Outfit:</span> <strong>10% (0.0 - 10.0 scale)</strong></li>
-            <li><span>Swimsuit Competition:</span> <strong>10% (0.0 - 10.0 scale)</strong></li>
-            <li><span>Festival Costume:</span> <strong>30% (0.0 - 10.0 scale)</strong></li>
-            <li><span>Evening Gown:</span> <strong>20% (0.0 - 10.0 scale)</strong></li>
-            <li><span>Beauty & Intelligence (Q&A):</span> <strong>30% (0.0 - 10.0 scale)</strong></li>
-            <li class="criteria-total-row"><span>Total Round 1:</span> <strong>100% (100 Points Max)</strong></li>
-          </ul>
+          <p class="criteria-help">Each judge scores every criterion from 0.0 to 10.0.</p>
+          <div class="criteria-editor">
+            <div v-for="(criterion, index) in form.roundOneCategories" :key="criterion.key" class="criterion-row">
+              <label>
+                Criterion name
+                <input v-model.trim="criterion.label" required maxlength="80" />
+              </label>
+              <label class="weight-field">
+                Weight
+                <span class="weight-input"><input v-model.number="criterion.weight" type="number" min="0.1" max="100" step="0.1" required /><span>%</span></span>
+              </label>
+              <button class="btn btn-ghost criterion-remove" type="button" :disabled="isProtectedCriterion('roundOneCategories', criterion.key)" :title="isProtectedCriterion('roundOneCategories', criterion.key) ? 'Current criteria can be changed but not removed.' : 'Remove added criterion'" :aria-label="`Remove ${criterion.label || `criterion ${index + 1}`}`" @click="removeCriterion('roundOneCategories', index)">
+                <AppIcon name="trash" />
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" :disabled="form.roundOneCategories.length >= 12" @click="addCriterion('roundOneCategories')"><AppIcon name="plus" /> Add Round 1 Criterion</button>
+          <div class="criteria-total-row" :class="{ invalid: !roundOneWeightValid }"><span>Total Round 1:</span><strong>{{ roundOneWeight }}% / 100%</strong></div>
         </div>
 
         <div class="criteria-section-box">
           <h4>Final Round (Top 5 Championship)</h4>
-          <ul class="criteria-list">
-            <li><span>Round 1 Weighted Carry-over:</span> <strong>20% (Max 20 pts)</strong></li>
-            <li><span>Final Intelligence & Q&A:</span> <strong>40% (Max 40 pts)</strong></li>
-            <li><span>Final Beauty & Charisma:</span> <strong>40% (Max 40 pts)</strong></li>
-            <li class="criteria-total-row"><span>Total Final Championship:</span> <strong>100% (100 Points Max)</strong></li>
-          </ul>
+          <p class="criteria-help">Round 1 remains a fixed 20% carry-over. Final criteria must total the remaining 80%.</p>
+          <div class="fixed-criterion"><span>Round 1 Weighted Carry-over</span><strong>20%</strong></div>
+          <div class="criteria-editor">
+            <div v-for="(criterion, index) in form.finalCategories" :key="criterion.key" class="criterion-row">
+              <label>
+                Criterion name
+                <input v-model.trim="criterion.label" required maxlength="80" />
+              </label>
+              <label class="weight-field">
+                Weight
+                <span class="weight-input"><input v-model.number="criterion.weight" type="number" min="0.1" max="80" step="0.1" required /><span>%</span></span>
+              </label>
+              <button class="btn btn-ghost criterion-remove" type="button" :disabled="isProtectedCriterion('finalCategories', criterion.key)" :title="isProtectedCriterion('finalCategories', criterion.key) ? 'Current criteria can be changed but not removed.' : 'Remove added criterion'" :aria-label="`Remove ${criterion.label || `criterion ${index + 1}`}`" @click="removeCriterion('finalCategories', index)">
+                <AppIcon name="trash" />
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" :disabled="form.finalCategories.length >= 12" @click="addCriterion('finalCategories')"><AppIcon name="plus" /> Add Final Criterion</button>
+          <div class="criteria-total-row" :class="{ invalid: !finalWeightValid }"><span>Total Final Championship:</span><strong>20% + {{ finalWeight }}% = {{ finalWeight + 20 }}%</strong></div>
         </div>
       </div>
+      <p class="criteria-warning"><AppIcon name="warning" /> Adding a criterion makes each score sheet incomplete until every judge submits a score for it. Existing scores and criteria are kept.</p>
+      <div class="button-row">
+        <button class="btn btn-primary" type="submit" :disabled="saving || !criteriaValid"><AppIcon name="check" /> {{ saving ? 'Saving...' : 'Save Scoring Criteria' }}</button>
+      </div>
+      </form>
     </section>
 
     <!-- Data Management, Backup & Reset Section -->
@@ -150,13 +169,20 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
 import Toast from '../../components/Toast.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
+import { finalCategories, roundOneCategories } from '../../utils/score.js';
 
 const message = ref('');
+const saving = ref(false);
+let criterionSequence = 0;
+const protectedKeys = {
+  roundOneCategories: new Set(roundOneCategories.map(({ key }) => key)),
+  finalCategories: new Set(finalCategories.map(({ key }) => key))
+};
 const form = reactive({
   pageantName: '',
   eventName: '',
@@ -165,21 +191,69 @@ const form = reactive({
   eventDate: '',
   venue: '',
   logo: '',
-  soundEnabled: true
+  roundOneCategories: roundOneCategories.map((criterion) => ({ ...criterion })),
+  finalCategories: finalCategories.map((criterion) => ({ ...criterion }))
+});
+
+const sumWeights = (criteria) => Math.round(criteria.reduce((sum, criterion) => sum + (Number(criterion.weight) || 0), 0) * 10) / 10;
+const roundOneWeight = computed(() => sumWeights(form.roundOneCategories));
+const finalWeight = computed(() => sumWeights(form.finalCategories));
+const roundOneWeightValid = computed(() => Math.abs(roundOneWeight.value - 100) < 0.001);
+const finalWeightValid = computed(() => Math.abs(finalWeight.value - 80) < 0.001);
+const criteriaValid = computed(() => {
+  const allCriteria = [...form.roundOneCategories, ...form.finalCategories];
+  const labelsValid = allCriteria.every((criterion) => criterion.label?.trim() && Number(criterion.weight) > 0);
+  const uniqueWithinRound = (criteria) => new Set(criteria.map((criterion) => criterion.label.trim().toLowerCase())).size === criteria.length;
+  return labelsValid && uniqueWithinRound(form.roundOneCategories) && uniqueWithinRound(form.finalCategories) && roundOneWeightValid.value && finalWeightValid.value;
 });
 
 onMounted(async () => {
   const { data } = await api.get('/pageant');
   Object.assign(form, {
     ...data.pageant,
-    eventDate: data.pageant.eventDate ? data.pageant.eventDate.slice(0, 10) : ''
+    eventDate: data.pageant.eventDate ? data.pageant.eventDate.slice(0, 10) : '',
+    roundOneCategories: (data.pageant.roundOneCategories?.length ? data.pageant.roundOneCategories : roundOneCategories).map((criterion) => ({ key: criterion.key, label: criterion.label, weight: Number(criterion.weight) })),
+    finalCategories: (data.pageant.finalCategories?.length ? data.pageant.finalCategories : finalCategories).map((criterion) => ({ key: criterion.key, label: criterion.label, weight: Number(criterion.weight) }))
   });
 });
 
 async function save() {
-  await api.put('/pageant', form);
-  message.value = 'Pageant settings updated successfully.';
-  setTimeout(() => (message.value = ''), 2500);
+  if (!criteriaValid.value) {
+    message.value = 'Round 1 criteria must total 100% and Final criteria must total 80%. Names must be unique.';
+    setTimeout(() => (message.value = ''), 4000);
+    return;
+  }
+  saving.value = true;
+  try {
+    const { data } = await api.put('/pageant', form);
+    form.roundOneCategories = data.pageant.roundOneCategories.map((criterion) => ({ key: criterion.key, label: criterion.label, weight: Number(criterion.weight) }));
+    form.finalCategories = data.pageant.finalCategories.map((criterion) => ({ key: criterion.key, label: criterion.label, weight: Number(criterion.weight) }));
+    message.value = 'Pageant settings and scoring criteria updated successfully.';
+    setTimeout(() => (message.value = ''), 2500);
+  } catch (err) {
+    message.value = err.response?.data?.message || 'Unable to save scoring criteria.';
+    setTimeout(() => (message.value = ''), 4000);
+  } finally {
+    saving.value = false;
+  }
+}
+
+function addCriterion(field) {
+  if (form[field].length >= 12) return;
+  criterionSequence += 1;
+  form[field].push({
+    key: `custom${Date.now().toString(36)}${criterionSequence.toString(36)}`,
+    label: 'New Criterion',
+    weight: 10
+  });
+}
+
+function removeCriterion(field, index) {
+  if (!isProtectedCriterion(field, form[field][index]?.key)) form[field].splice(index, 1);
+}
+
+function isProtectedCriterion(field, key) {
+  return protectedKeys[field].has(key);
 }
 
 async function downloadBackup() {
@@ -229,28 +303,97 @@ async function resetDemoData() {
   margin-bottom: 0.75rem;
 }
 
-.criteria-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+.criteria-help {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 0.9rem;
 }
 
-.criteria-list li {
+.criteria-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.criterion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 105px auto;
+  align-items: end;
+  gap: 0.6rem;
+}
+
+.criterion-row label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.criterion-row input {
+  margin-top: 0.25rem;
+}
+
+.weight-input {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.weight-input input {
+  padding-right: 1.7rem;
+}
+
+.weight-input span {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-38%);
+  font-weight: 800;
+}
+
+.criterion-remove {
+  padding: 0.65rem;
+}
+
+.fixed-criterion,
+.criteria-total-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem 0;
-  border-bottom: 1px dashed var(--border);
+  gap: 1rem;
+  font-size: 0.84rem;
+}
+
+.fixed-criterion {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem;
+  margin-bottom: 0.75rem;
 }
 
 .criteria-total-row {
-  border-top: 2px solid var(--gold) !important;
-  border-bottom: none !important;
+  border-top: 2px solid var(--gold);
   font-weight: 900;
   color: var(--gold-dark);
   margin-top: 0.4rem;
-  padding-top: 0.5rem !important;
+  padding-top: 0.65rem;
+}
+
+.criteria-total-row.invalid {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.criteria-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 1rem 0;
+}
+
+.criteria-warning .app-icon {
+  color: var(--gold-dark);
+  flex: 0 0 auto;
 }
 
 .backup-tools-grid {
@@ -280,6 +423,16 @@ async function resetDemoData() {
 .backup-tool-card h4 {
   font-size: 1rem;
   font-weight: 800;
+}
+
+@media (max-width: 520px) {
+  .criterion-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .criterion-row > label:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (min-width: 700px) {

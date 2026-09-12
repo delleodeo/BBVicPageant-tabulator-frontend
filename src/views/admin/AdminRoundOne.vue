@@ -135,7 +135,7 @@ import StatusBadge from '../../components/StatusBadge.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
 import { connectSocket } from '../../services/socket.js';
-import { fmt } from '../../utils/score.js';
+import { fmt, roundOneCategories } from '../../utils/score.js';
 
 const data = ref({});
 const pageantData = ref(null);
@@ -189,7 +189,9 @@ function statusFormatter(cell) {
   return pill;
 }
 
-const columns = [
+const activeCategories = computed(() => data.value.categories?.length ? data.value.categories : roundOneCategories);
+
+const columns = computed(() => [
   { title: 'Rank', field: 'rank', sorter: 'number', width: 78, hozAlign: 'center', formatter: rankFormatter },
   { title: '#', field: 'number', width: 62, hozAlign: 'center', formatter: (cell) => makeCell('number-cell', `#${cell.getValue()}`) },
   {
@@ -201,38 +203,38 @@ const columns = [
     formatter: candidateFormatter
   },
   { title: 'Hometown', field: 'hometown', headerFilter: 'input', headerFilterPlaceholder: 'Search town', minWidth: 135 },
-  { title: 'Prod 10%', field: 'production', hozAlign: 'right', width: 108, formatter: scoreFormatter },
-  { title: 'Swim 10%', field: 'swimsuit', hozAlign: 'right', width: 108, formatter: scoreFormatter },
-  { title: 'Costume 30%', field: 'festival', hozAlign: 'right', width: 124, formatter: scoreFormatter },
-  { title: 'Gown 20%', field: 'gown', hozAlign: 'right', width: 112, formatter: scoreFormatter },
-  { title: 'B&I 30%', field: 'beauty', hozAlign: 'right', width: 108, formatter: scoreFormatter },
+  ...activeCategories.value.map((category) => ({
+    title: `${category.label} ${category.weight}%`,
+    field: `category_${category.key}`,
+    hozAlign: 'right',
+    minWidth: 108,
+    formatter: scoreFormatter
+  })),
   { title: 'Total', field: 'total', sorter: 'number', hozAlign: 'right', width: 112, formatter: totalFormatter },
   { title: 'Status', field: 'status', headerFilter: 'input', headerFilterPlaceholder: 'Filter', width: 132, formatter: statusFormatter }
-];
+]);
 
-const printColumns = [
-  { key: 'production', label: 'Production (10%)' },
-  { key: 'swimsuit', label: 'Swimsuit (10%)' },
-  { key: 'festival', label: 'Costume (30%)' },
-  { key: 'gown', label: 'Gown (20%)' },
-  { key: 'beauty', label: 'B&I (30%)' }
-];
+const printColumns = computed(() => activeCategories.value.map((category) => ({
+  key: `category_${category.key}`,
+  label: `${category.label} (${category.weight}%)`
+})));
 
 const rows = computed(() =>
-  (data.value.rankings || []).map((result) => ({
-    id: result.contestant._id,
-    rank: result.rank,
-    number: result.contestant.contestantNumber,
-    name: result.contestant.name,
-    hometown: result.contestant.hometown || '',
-    production: fmt(result.categories.find((category) => category.key === 'productionOutfit')?.weighted),
-    swimsuit: fmt(result.categories.find((category) => category.key === 'swimsuit')?.weighted),
-    festival: fmt(result.categories.find((category) => category.key === 'festivalCostume')?.weighted),
-    gown: fmt(result.categories.find((category) => category.key === 'eveningGown')?.weighted),
-    beauty: fmt(result.categories.find((category) => category.key === 'beautyIntelligence')?.weighted),
-    total: fmt(result.total),
-    status: result.contestant.status
-  }))
+  (data.value.rankings || []).map((result) => {
+    const row = {
+      id: result.contestant._id,
+      rank: result.rank,
+      number: result.contestant.contestantNumber,
+      name: result.contestant.name,
+      hometown: result.contestant.hometown || '',
+      total: fmt(result.total),
+      status: result.contestant.status
+    };
+    for (const category of activeCategories.value) {
+      row[`category_${category.key}`] = fmt(result.categories.find((entry) => entry.key === category.key)?.weighted);
+    }
+    return row;
+  })
 );
 
 const tieInfo = computed(() => {

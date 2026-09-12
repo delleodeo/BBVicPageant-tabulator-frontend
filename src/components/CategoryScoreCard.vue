@@ -1,5 +1,9 @@
 <template>
-  <article class="score-card" :class="{ 'is-scored': hasScore }">
+  <article
+    class="score-card"
+    :class="{ 'is-scored': hasScore, 'is-saving': saving, 'is-queued': queued || failed }"
+    :aria-busy="saving"
+  >
     <div class="score-card-header">
       <div>
         <h3 class="score-card-title">{{ category.label }}</h3>
@@ -21,23 +25,31 @@
 
     <div class="score-card-footer">
       <div class="score-status-row">
-        <span class="status-indicator" :class="{ saved: isSaved, unsaved: isDirty }">
-          <AppIcon v-if="isSaved" name="check" />
+        <span
+          class="status-indicator"
+          :class="{ saved: isSaved, unsaved: isDirty, saving, queued, failed }"
+        >
+          <AppIcon v-if="saving" name="arrowPath" class="saving-spinner" />
+          <AppIcon v-else-if="failed" name="warning" />
+          <AppIcon v-else-if="queued" name="arrowPath" />
+          <AppIcon v-else-if="isSaved" name="check" />
           <span v-else-if="isDirty" class="status-dot"></span>
-          {{ isDirty ? 'Unsaved changes' : isSaved ? 'Score recorded' : 'Pending rating' }}
+          {{ statusText }}
         </span>
       </div>
 
       <button
         class="btn btn-primary full"
         type="button"
-        :disabled="disabled || saving || !isDirty"
+        :disabled="disabled || saving || (!isDirty && !canRetry)"
         @click="save"
       >
-        <AppIcon :name="isSaved && !isDirty ? 'check' : 'scoreSheet'" />
+        <AppIcon :name="buttonIcon" :class="{ 'saving-spinner': saving }" />
         <span v-if="saving">Saving...</span>
         <span v-else-if="disabled">Scoring Locked</span>
         <span v-else-if="isDirty">Save {{ category.label }} Score</span>
+        <span v-else-if="failed">Retry Save</span>
+        <span v-else-if="queued">Retry Now</span>
         <span v-else-if="isSaved">Saved ({{ Number(localValue).toFixed(1) }})</span>
         <span v-else>Choose Score</span>
       </button>
@@ -55,11 +67,15 @@ const emit = defineEmits(['save', 'invalid']);
 const props = defineProps({
   category: { type: Object, required: true },
   currentValue: { type: [String, Number], default: '' },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  saveState: { type: String, default: 'idle' }
 });
 
 const localValue = ref(props.currentValue ?? '');
-const saving = ref(false);
+const saving = computed(() => props.saveState === 'saving');
+const queued = computed(() => props.saveState === 'queued');
+const failed = computed(() => props.saveState === 'error');
+const canRetry = computed(() => queued.value || failed.value);
 
 watch(
   () => props.currentValue,
@@ -82,7 +98,23 @@ const isDirty = computed(() => {
 });
 
 const isSaved = computed(() => {
-  return hasScore.value && !isDirty.value;
+  return hasScore.value && !isDirty.value && !saving.value && !queued.value && !failed.value;
+});
+
+const statusText = computed(() => {
+  if (saving.value) return 'Saving...';
+  if (isDirty.value) return 'Unsaved changes';
+  if (failed.value) return 'Stored on device — tap Retry Save';
+  if (queued.value) return 'Stored on device — waiting to sync';
+  if (isSaved.value) return 'Score recorded in database';
+  return 'Pending rating';
+});
+
+const buttonIcon = computed(() => {
+  if (saving.value || queued.value) return 'arrowPath';
+  if (failed.value) return 'warning';
+  if (isSaved.value && !isDirty.value) return 'check';
+  return 'scoreSheet';
 });
 
 function handleScoreChange(val) {
@@ -92,23 +124,26 @@ function handleScoreChange(val) {
   }
 }
 
-async function save() {
+function save() {
   if (!validScore(localValue.value)) {
     emit('invalid', 'Score must be between 0.0 and 10.0 and use increments of 0.1.');
     return;
   }
-  saving.value = true;
-  try {
-    await emit('save', props.category.key, Number(localValue.value));
-  } finally {
-    saving.value = false;
-  }
+  emit('save', props.category.key, Number(localValue.value));
 }
 </script>
 
 <style scoped>
 .is-scored {
   border-color: var(--border-gold);
+}
+
+.is-saving {
+  box-shadow: 0 0 0 3px var(--gold-glow), var(--shadow-md);
+}
+
+.is-queued {
+  border-color: rgba(245, 158, 11, 0.55);
 }
 
 .score-card-header {
@@ -184,6 +219,20 @@ async function save() {
 
 .status-indicator.unsaved {
   color: var(--warning);
+}
+
+.status-indicator.saving,
+.status-indicator.queued,
+.status-indicator.failed {
+  color: var(--warning);
+}
+
+.saving-spinner {
+  animation: score-card-spin 900ms linear infinite;
+}
+
+@keyframes score-card-spin {
+  to { transform: rotate(360deg); }
 }
 
 .score-card .btn .app-icon {

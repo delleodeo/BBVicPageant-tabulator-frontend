@@ -21,15 +21,6 @@
         <span v-if="item.badge" class="sidebar-link-badge">{{ item.badge }}</span>
       </RouterLink>
     </nav>
-
-    <div class="sidebar-footer">
-      <RouterLink to="/stage" target="_blank" class="sidebar-link" style="color: var(--gold-light);">
-        <span class="sidebar-link-icon">
-          <AppIcon name="stage" />
-        </span>
-        <span>Stage Mode (F11)</span>
-      </RouterLink>
-    </div>
   </aside>
 </template>
 

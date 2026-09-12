@@ -14,7 +14,7 @@
 
         <div class="login-hero-copy">
           <h2>Secure access for every pageant official.</h2>
-          <p>Sign in to manage contestants, score sheets, final results, and projector-ready stage views from any screen size.</p>
+          <p>Sign in to manage contestants, score sheets, and final results from any screen size.</p>
         </div>
 
         <div class="login-trust-grid" aria-label="Platform highlights">
@@ -27,8 +27,8 @@
             <span>Live tabulation</span>
           </div>
           <div>
-            <AppIcon name="stage" />
-            <span>Stage mode</span>
+            <AppIcon name="contestants" />
+            <span>Contestant management</span>
           </div>
         </div>
       </div>
@@ -86,13 +86,6 @@
           </p>
         </form>
 
-        <div class="login-footer">
-          <RouterLink to="/stage" target="_blank" class="stage-link">
-            <AppIcon name="stage" />
-            Open Stage / Projector Screen
-            <AppIcon name="arrowRight" />
-          </RouterLink>
-        </div>
       </div>
     </section>
   </main>
@@ -329,30 +322,6 @@ async function submit() {
   width: 1.1rem;
   height: 1.1rem;
   flex: 0 0 1.1rem;
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 1.25rem;
-}
-
-.stage-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--gold-dark);
-}
-
-.stage-link .app-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-.stage-link:hover {
-  text-decoration: underline;
 }
 
 @keyframes spin {

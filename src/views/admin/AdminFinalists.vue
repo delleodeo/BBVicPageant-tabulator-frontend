@@ -25,10 +25,6 @@
         </div>
 
         <div class="finalists-actions">
-          <RouterLink to="/stage" target="_blank" class="btn btn-gold">
-            <AppIcon name="stage" />
-            Stage Reveal
-          </RouterLink>
           <RouterLink to="/admin/final-round" class="btn btn-primary">
             Final Tabulation
             <AppIcon name="arrowRight" />
@@ -412,10 +408,6 @@ onMounted(async () => {
 @media (min-width: 520px) {
   .finalists-hero {
     padding: 1.25rem;
-  }
-
-  .finalists-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .finalist-card {

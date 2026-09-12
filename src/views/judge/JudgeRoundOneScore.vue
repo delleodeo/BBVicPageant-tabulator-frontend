@@ -71,7 +71,7 @@
           </div>
           <div class="completion-pill" :class="{ complete: isAllCategoriesScored }">
             <AppIcon v-if="isAllCategoriesScored" name="check" />
-            {{ isAllCategoriesScored ? 'All categories scored' : `${completedCategoryCount} / 5 scored` }}
+            {{ isAllCategoriesScored ? 'All categories scored' : `${completedCategoryCount} / ${categories.length} scored` }}
           </div>
         </div>
       </section>
@@ -88,6 +88,8 @@
         </div>
       </section>
 
+      <ScoreSyncNotice :states="scoreSaveStates" />
+
       <!-- Category Scoring Cards Grid -->
       <section class="score-grid">
         <CategoryScoreCard
@@ -96,6 +98,7 @@
           :category="category"
           :current-value="score?.[category.key]"
           :disabled="round?.status !== 'OPEN'"
+          :save-state="scoreSaveStates[category.key]"
           @save="save"
           @invalid="showError"
         />
@@ -170,13 +173,21 @@ import CategoryScoreCard from '../../components/CategoryScoreCard.vue';
 import ContestantBioModal from '../../components/ContestantBioModal.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import LoadingState from '../../components/LoadingState.vue';
+import ScoreSyncNotice from '../../components/ScoreSyncNotice.vue';
 import Toast from '../../components/Toast.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
 import { api, mediaUrl } from '../../services/api.js';
+import {
+  getPendingScores,
+  saveScoreDurably,
+  SCORE_OUTBOX_EVENT
+} from '../../services/scoreOutbox.js';
 import { connectSocket } from '../../services/socket.js';
+import { useAuthStore } from '../../stores/auth.js';
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
 
 const loading = ref(true);
 const contestant = ref(null);
@@ -190,6 +201,8 @@ const noteSaved = ref(false);
 const message = ref('');
 const error = ref('');
 const showBioModal = ref(false);
+const scoreSaveStates = ref({});
+let messageTimer = null;
 
 const completedCategoryCount = computed(() => {
   if (!score.value || !categories.value.length) return 0;
@@ -243,9 +256,11 @@ async function load() {
   contestant.value = candidateRes.data.contestant;
   round.value = candidateRes.data.round;
   score.value = candidateRes.data.score;
+  scoreSaveStates.value = {};
   categories.value = candidateRes.data.categories;
   allContestants.value = allRes.data.contestants || [];
   judgeNote.value = noteRes.data?.note || '';
+  applyPendingScores();
   loading.value = false;
 
   // Emit live activity
@@ -274,15 +289,114 @@ function showError(value) {
   error.value = value;
 }
 
+function setSaveState(categoryKey, state) {
+  scoreSaveStates.value = { ...scoreSaveStates.value, [categoryKey]: state };
+}
+
+function showMessage(value) {
+  message.value = value;
+  if (messageTimer) window.clearTimeout(messageTimer);
+  messageTimer = window.setTimeout(() => (message.value = ''), 3000);
+}
+
+function entryMatchesCurrentScore(entry) {
+  return entry
+    && String(entry.judgeId) === String(auth.judge?.judgeId)
+    && entry.round === 'ROUND_1'
+    && String(entry.contestantId) === String(contestant.value?._id);
+}
+
+function applyPendingScores() {
+  if (!contestant.value?._id || !auth.judge?.judgeId) return;
+
+  try {
+    const pending = getPendingScores({
+      judgeId: auth.judge.judgeId,
+      round: 'ROUND_1',
+      contestantId: contestant.value._id
+    });
+    const pendingKeys = new Set(pending.map((entry) => entry.categoryKey));
+    const nextStates = { ...scoreSaveStates.value };
+
+    for (const [categoryKey, state] of Object.entries(nextStates)) {
+      if (['saving', 'queued', 'error'].includes(state) && !pendingKeys.has(categoryKey)) {
+        nextStates[categoryKey] = 'saved';
+      }
+    }
+
+    const localScore = { ...(score.value || {}) };
+    for (const entry of pending) {
+      localScore[entry.categoryKey] = entry.value;
+      if (nextStates[entry.categoryKey] !== 'saving') {
+        nextStates[entry.categoryKey] = entry.retryable === false ? 'error' : 'queued';
+      }
+    }
+
+    score.value = localScore;
+    scoreSaveStates.value = nextStates;
+  } catch (storageError) {
+    error.value = storageError.message;
+  }
+}
+
+function handleScoreOutboxEvent(event) {
+  const { state, entry, score: confirmedScore, error: syncError } = event.detail || {};
+  if (state === 'changed') {
+    applyPendingScores();
+    return;
+  }
+  if (!entryMatchesCurrentScore(entry)) return;
+
+  if (state === 'saving') {
+    setSaveState(entry.categoryKey, 'saving');
+    return;
+  }
+
+  if (state === 'queued' || state === 'error') {
+    score.value = { ...(score.value || {}), [entry.categoryKey]: entry.value };
+    setSaveState(entry.categoryKey, state);
+    if (syncError) {
+      const prefix = state === 'queued' ? 'Connection is slow. ' : '';
+      showMessage(`${prefix}${syncError} Your score remains saved on this device.`);
+    }
+    return;
+  }
+
+  if (state === 'saved') {
+    score.value = { ...(score.value || {}), ...(confirmedScore || {}) };
+    setSaveState(entry.categoryKey, 'saved');
+    applyPendingScores();
+    error.value = '';
+    const label = categories.value.find((category) => category.key === entry.categoryKey)?.label || entry.categoryKey;
+    showMessage(`${label} score saved to the database.`);
+  }
+}
+
 async function save(categoryKey, value) {
   error.value = '';
-  const payload = { contestantId: contestant.value._id, [categoryKey]: value };
-  const response = score.value?._id
-    ? await api.put(`/judge/round-one/scores/${score.value._id}`, payload)
-    : await api.post('/judge/round-one/scores', payload);
-  score.value = response.data.score;
-  message.value = `${categoryKey} score saved.`;
-  setTimeout(() => (message.value = ''), 2000);
+  score.value = { ...(score.value || {}), [categoryKey]: value };
+  setSaveState(categoryKey, 'saving');
+
+  try {
+    const result = await saveScoreDurably({
+      judgeId: auth.judge?.judgeId,
+      round: 'ROUND_1',
+      contestantId: contestant.value._id,
+      categoryKey,
+      value
+    });
+
+    if (result.status === 'queued') {
+      setSaveState(categoryKey, 'queued');
+      showMessage('Connection is slow or offline. Your score is saved on this device and will retry automatically.');
+    } else if (result.status === 'error') {
+      setSaveState(categoryKey, 'error');
+      error.value = `${result.error} The score remains saved on this device.`;
+    }
+  } catch (saveError) {
+    setSaveState(categoryKey, 'error');
+    error.value = saveError.message || 'The score could not be stored safely. Please try again.';
+  }
 }
 
 async function saveNote() {
@@ -302,11 +416,16 @@ async function saveNote() {
 }
 
 onMounted(() => {
+  window.addEventListener(SCORE_OUTBOX_EVENT, handleScoreOutboxEvent);
+  connectSocket().on('criteria:updated', load);
   load();
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener(SCORE_OUTBOX_EVENT, handleScoreOutboxEvent);
+  if (messageTimer) window.clearTimeout(messageTimer);
   const socket = connectSocket();
+  socket.off('criteria:updated', load);
   socket.emit('judge:activity', {
     contestantId: null,
     round: null

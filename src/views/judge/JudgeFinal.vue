@@ -5,7 +5,7 @@
       <div class="section-head">
         <div>
           <h2>Top 5 Finalists</h2>
-          <p class="section-subhead">Grade the official Top 5 finalists on Final Intelligence & Beauty criteria</p>
+          <p class="section-subhead">Grade the official Top 5 finalists across {{ categories.length }} Final Round criteria</p>
         </div>
         <StatusBadge :label="round?.status || 'SETUP'" :tone="round?.status === 'LOCKED' ? 'success' : 'neutral'" />
       </div>
@@ -37,8 +37,7 @@
             </span>
           </div>
           <div class="final-score-pills">
-            <span :class="{ complete: finalCategoryScored(finalist.contestantId._id, 'intelligence') }">Intelligence</span>
-            <span :class="{ complete: finalCategoryScored(finalist.contestantId._id, 'beauty') }">Beauty</span>
+            <span v-for="category in categories" :key="category.key" :class="{ complete: finalCategoryScored(finalist.contestantId._id, category.key) }">{{ category.label }}</span>
           </div>
         </div>
 
@@ -57,7 +56,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
 import ContestantCard from '../../components/ContestantCard.vue';
 import EmptyState from '../../components/EmptyState.vue';
@@ -66,13 +65,15 @@ import ProgressBar from '../../components/ProgressBar.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
 import { api } from '../../services/api.js';
-import { fmt } from '../../utils/score.js';
+import { connectSocket } from '../../services/socket.js';
+import { finalCategories, fmt } from '../../utils/score.js';
 
 const loading = ref(true);
 const round = ref(null);
 const finalists = ref([]);
 const scores = ref([]);
 const roundOneRankings = ref([]);
+const categories = ref(finalCategories.map((category) => ({ ...category })));
 
 const completeCount = computed(() =>
   finalists.value.filter((f) => scoreComplete(f.contestantId?._id)).length
@@ -89,7 +90,7 @@ function roundOneTotal(contestantId) {
 
 function scoreComplete(contestantId) {
   const score = scores.value.find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId));
-  return score?.intelligence !== undefined && score?.beauty !== undefined;
+  return categories.value.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
 }
 
 function finalCategoryScored(contestantId, key) {
@@ -99,20 +100,33 @@ function finalCategoryScored(contestantId, key) {
 
 function getFinalScore(contestantId) {
   const score = scores.value.find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId));
-  if (!score || score.intelligence == null || score.beauty == null) return null;
+  if (!score || !categories.value.every((category) => score[category.key] != null)) return null;
   const result = roundOneRankings.value.find((entry) => String(entry.contestant._id) === String(contestantId));
   const r1 = Number(result?.total || 0);
-  const total = r1 * 0.2 + Number(score.intelligence) * 10 * 0.4 + Number(score.beauty) * 10 * 0.4;
+  const total = r1 * 0.2 + categories.value.reduce(
+    (sum, category) => sum + Number(score[category.key]) * (category.weight / 10),
+    0
+  );
   return total.toFixed(1);
 }
 
-onMounted(async () => {
+async function load() {
   const { data } = await api.get('/judge/final');
   round.value = data.round;
   finalists.value = data.finalists;
   scores.value = data.scores;
   roundOneRankings.value = data.roundOneRankings;
+  categories.value = data.categories?.length ? data.categories : categories.value;
   loading.value = false;
+}
+
+onMounted(() => {
+  connectSocket().on('criteria:updated', load);
+  load();
+});
+
+onBeforeUnmount(() => {
+  connectSocket().off('criteria:updated', load);
 });
 </script>
 

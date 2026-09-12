@@ -16,12 +16,10 @@ import JudgeFinalScore from '../views/judge/JudgeFinalScore.vue';
 import JudgeProfile from '../views/judge/JudgeProfile.vue';
 import JudgeRoundOne from '../views/judge/JudgeRoundOne.vue';
 import JudgeRoundOneScore from '../views/judge/JudgeRoundOneScore.vue';
-import StagePresentation from '../views/stage/StagePresentation.vue';
 
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: LoginView },
-  { path: '/stage', component: StagePresentation },
   { path: '/admin/dashboard', component: AdminDashboard, meta: { role: 'admin' } },
   { path: '/admin/contestants', component: AdminContestants, meta: { role: 'admin' } },
   { path: '/admin/judges', component: AdminJudges, meta: { role: 'admin' } },
@@ -57,4 +55,3 @@ router.beforeEach((to) => {
 });
 
 export default router;
-

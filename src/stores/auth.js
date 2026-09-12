@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { api } from '../services/api.js';
+import { flushScoreOutbox } from '../services/scoreOutbox.js';
 import { connectSocket, disconnectSocket } from '../services/socket.js';
 
 export const useAuthStore = defineStore('auth', {
@@ -26,6 +27,7 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('judge', JSON.stringify(data.judge || null));
         connectSocket();
+        if (data.judge?.judgeId) void flushScoreOutbox({ force: true }).catch(() => {});
         return data;
       } finally {
         this.loading = false;
@@ -42,4 +44,3 @@ export const useAuthStore = defineStore('auth', {
     }
   }
 });
-

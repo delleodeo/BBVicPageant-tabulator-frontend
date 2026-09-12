@@ -9,11 +9,6 @@
     </div>
 
     <div v-if="!hideActions" class="topbar-actions">
-      <!-- Stage Mode link for quick presentation on projector/TV -->
-      <RouterLink to="/stage" target="_blank" class="btn btn-gold btn-sm" title="Open Stage Presentation Mode">
-        <AppIcon name="stage" /> Stage Mode
-      </RouterLink>
-
       <!-- Theme Switcher -->
       <button type="button" class="btn btn-ghost btn-icon btn-sm" :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'" @click="toggleTheme">
         <AppIcon :name="isDark ? 'sun' : 'moon'" />
@@ -153,11 +148,10 @@ function logout() {
   .topbar-actions {
     width: 100%;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 0.65rem;
   }
 
-  .topbar-actions > .btn:first-child,
   .user-chip {
     justify-content: center;
     min-width: 0;

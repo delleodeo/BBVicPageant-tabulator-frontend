@@ -5,7 +5,7 @@
       <div class="section-head">
         <div>
           <h2>Round 1 Contestants</h2>
-          <p class="section-subhead">Grade all {{ contestants.length }} official delegates across 5 criteria</p>
+          <p class="section-subhead">Grade all {{ contestants.length }} official delegates across {{ categories.length }} criteria</p>
         </div>
         <StatusBadge :label="round?.status || 'SETUP'" :tone="round?.status === 'LOCKED' ? 'success' : 'neutral'" />
       </div>
@@ -69,19 +69,19 @@
       >
         <div class="judge-card-score">
           <div class="card-score-summary">
-            <span class="score-ratio">{{ scoreCount(contestant) }} / 5 Scored</span>
+            <span class="score-ratio">{{ scoreCount(contestant) }} / {{ categories.length }} Scored</span>
             <span v-if="getContestantTotal(contestant) !== null" class="score-val">
               {{ getContestantTotal(contestant) }} pts
             </span>
           </div>
           <div class="mini-progress" aria-hidden="true">
-            <span :style="{ width: `${(scoreCount(contestant) / 5) * 100}%` }"></span>
+            <span :style="{ width: `${categories.length ? (scoreCount(contestant) / categories.length) * 100 : 0}%` }"></span>
           </div>
         </div>
 
         <StatusBadge
-          :label="scoreCount(contestant) === 5 ? 'COMPLETE' : 'PENDING'"
-          :tone="scoreCount(contestant) === 5 ? 'success' : 'neutral'"
+          :label="scoreCount(contestant) === categories.length ? 'COMPLETE' : 'PENDING'"
+          :tone="scoreCount(contestant) === categories.length ? 'success' : 'neutral'"
         />
       </ContestantCard>
     </section>
@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
 import ContestantCard from '../../components/ContestantCard.vue';
 import EmptyState from '../../components/EmptyState.vue';
@@ -100,6 +100,7 @@ import ProgressBar from '../../components/ProgressBar.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import JudgeLayout from '../../layouts/JudgeLayout.vue';
 import { api } from '../../services/api.js';
+import { connectSocket } from '../../services/socket.js';
 import { roundOneCategories } from '../../utils/score.js';
 
 const contestants = ref([]);
@@ -108,9 +109,10 @@ const round = ref(null);
 const loading = ref(true);
 const filterTab = ref('ALL');
 const searchQuery = ref('');
+const categories = ref(roundOneCategories.map((category) => ({ ...category })));
 
 const completeCount = computed(() =>
-  contestants.value.filter((contestant) => scoreCount(contestant) === 5).length
+  contestants.value.filter((contestant) => scoreCount(contestant) === categories.value.length).length
 );
 
 const progress = computed(() =>
@@ -119,7 +121,7 @@ const progress = computed(() =>
 
 function scoreCount(contestant) {
   const score = scores.value.find((entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestant._id));
-  return roundOneCategories.filter(
+  return categories.value.filter(
     (category) => score?.[category.key] !== undefined && score?.[category.key] !== null
   ).length;
 }
@@ -129,7 +131,7 @@ function getContestantTotal(contestant) {
   if (!score) return null;
   let total = 0;
   let hasAny = false;
-  for (const cat of roundOneCategories) {
+  for (const cat of categories.value) {
     if (score[cat.key] != null) {
       hasAny = true;
       total += Number(score[cat.key]) * (cat.weight / 10);
@@ -141,7 +143,7 @@ function getContestantTotal(contestant) {
 const filteredContestants = computed(() => {
   return contestants.value.filter((c) => {
     // Filter Tab
-    const isComplete = scoreCount(c) === 5;
+    const isComplete = scoreCount(c) === categories.value.length;
     if (filterTab.value === 'PENDING' && isComplete) return false;
     if (filterTab.value === 'COMPLETE' && !isComplete) return false;
 
@@ -158,12 +160,22 @@ const filteredContestants = computed(() => {
   });
 });
 
-onMounted(async () => {
+async function load() {
   const { data } = await api.get('/judge/round-one');
   contestants.value = data.contestants;
   scores.value = data.scores;
   round.value = data.round;
+  categories.value = data.categories?.length ? data.categories : categories.value;
   loading.value = false;
+}
+
+onMounted(() => {
+  connectSocket().on('criteria:updated', load);
+  load();
+});
+
+onBeforeUnmount(() => {
+  connectSocket().off('criteria:updated', load);
 });
 </script>
 
