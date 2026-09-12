@@ -192,8 +192,8 @@
               <input v-model="form.hometown" placeholder="e.g. Cebu City, Manila" />
             </label>
             <label>
-              Age
-              <input v-model="form.age" type="number" min="0" max="120" placeholder="e.g. 23" />
+              Age (optional)
+              <input v-model="form.age" type="number" min="0" max="120" placeholder="Leave blank if unknown" />
             </label>
           </div>
 
@@ -365,7 +365,7 @@ function openCreateModal() {
 }
 
 function edit(c) {
-  Object.assign(form, c);
+  Object.assign(form, { ...c, age: c.age ?? '' });
   Object.assign(photoUpload, { uploading: false, error: '' });
   showModal.value = true;
 }
@@ -393,10 +393,11 @@ async function handlePhotoFileChange(event) {
 
 async function save() {
   try {
+    const payload = { ...form, age: form.age === '' || form.age == null ? null : Number(form.age) };
     if (form._id) {
-      await api.put(`/contestants/${form._id}`, form);
+      await api.put(`/contestants/${form._id}`, payload);
     } else {
-      await api.post('/contestants', form);
+      await api.post('/contestants', payload);
     }
     showModal.value = false;
     await load();
