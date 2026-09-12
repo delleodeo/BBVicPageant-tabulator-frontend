@@ -287,9 +287,12 @@ async function resetDemoData() {
 .criteria-preview-grid {
   display: grid;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .criteria-section-box {
+  min-width: 0;
+  max-width: 100%;
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -324,11 +327,14 @@ async function resetDemoData() {
 }
 
 .criterion-row label {
+  min-width: 0;
   font-size: 0.74rem;
   color: var(--text-muted);
 }
 
 .criterion-row input {
+  width: 100%;
+  min-width: 0;
   margin-top: 0.25rem;
 }
 
@@ -384,16 +390,22 @@ async function resetDemoData() {
 
 .criteria-warning {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
   color: var(--text-muted);
   font-size: 0.8rem;
+  line-height: 1.45;
   margin: 1rem 0;
 }
 
 .criteria-warning .app-icon {
+  width: 1.1rem;
+  height: 1.1rem;
   color: var(--gold-dark);
-  flex: 0 0 auto;
+  flex: 0 0 1.1rem;
+  margin-top: 0.05rem;
 }
 
 .backup-tools-grid {
@@ -439,7 +451,7 @@ async function resetDemoData() {
   .form-row-2,
   .criteria-preview-grid,
   .backup-tools-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>
