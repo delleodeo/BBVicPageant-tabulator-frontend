@@ -1,7 +1,7 @@
 <template>
   <JudgeLayout title="Round 1 Scoring">
     <!-- Progress Panel -->
-    <section class="panel panel-gold">
+    <section class="panel panel-gold judge-progress-panel judge-progress-panel--round-one">
       <div class="section-head">
         <div>
           <h2>Round 1 Contestants</h2>
@@ -13,7 +13,7 @@
       <ProgressBar :value="progress" />
       <div class="progress-details-row">
         <span>Scoring Progress: <strong>{{ completeCount }} of {{ contestants.length }} Completed</strong> ({{ progress }}%)</span>
-        <span v-if="completeCount === contestants.length" class="all-done-tag">
+        <span v-if="contestants.length > 0 && completeCount === contestants.length" class="all-done-tag">
           <AppIcon name="check" />
           All Candidates Graded
         </span>

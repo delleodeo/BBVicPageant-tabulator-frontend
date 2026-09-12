@@ -1,7 +1,7 @@
 <template>
   <JudgeLayout title="Judge Control Hub">
     <!-- Active Round Action Banner -->
-    <section class="panel panel-gold active-round-banner">
+    <section class="panel panel-gold active-round-banner" :class="activeRoundBannerClass">
       <div class="banner-content">
         <span class="eyebrow"><AppIcon name="judge" /> Official Pageant Judging</span>
         <h2>{{ activeRoundTitle }}</h2>
@@ -38,25 +38,29 @@
 
     <!-- Key Metrics Grid -->
     <section class="metric-grid judge-metric-grid">
-      <ScoreSummary>
+      <ScoreSummary class="judge-metric-card metric-card--round-one">
+        <AppIcon class="metric-card-icon" :name="roundOne.round?.status === 'LOCKED' ? 'lock' : 'scoreSheet'" />
         <p>Round 1 Status</p>
         <strong>{{ roundOne.round?.status || 'SETUP' }}</strong>
         <span class="card-meta">{{ roundOneStatusMeta }}</span>
       </ScoreSummary>
 
-      <ScoreSummary>
+      <ScoreSummary class="judge-metric-card metric-card--candidates">
+        <AppIcon class="metric-card-icon" name="contestants" />
         <p>Total Candidates</p>
         <strong>{{ roundOne.contestants?.length || 0 }}</strong>
         <span class="card-meta">Official Delegates</span>
       </ScoreSummary>
 
-      <ScoreSummary>
+      <ScoreSummary class="judge-metric-card metric-card--progress">
+        <AppIcon class="metric-card-icon" name="chart" />
         <p>Your R1 Progress</p>
         <strong>{{ completeCount }} / {{ roundOne.contestants?.length || 0 }}</strong>
         <span class="card-meta">{{ roundOneProgressPct }}% Completed</span>
       </ScoreSummary>
 
-      <ScoreSummary>
+      <ScoreSummary class="judge-metric-card metric-card--final">
+        <AppIcon class="metric-card-icon" :name="final.round?.status === 'LOCKED' ? 'lock' : 'finalRound'" />
         <p>Final Round Status</p>
         <strong>{{ final.round?.status || 'SETUP' }}</strong>
         <span class="card-meta">{{ final.finalists?.length || 0 }} Finalists</span>
@@ -214,6 +218,13 @@ const activeRoundTitle = computed(() => {
   return 'Tabulation Setup in Progress';
 });
 
+const activeRoundBannerClass = computed(() => {
+  if (final.value.round?.status === 'OPEN') return 'active-round-banner--final';
+  if (roundOne.value.round?.status === 'OPEN') return 'active-round-banner--round-one';
+  if (roundOne.value.round?.status === 'LOCKED') return 'active-round-banner--waiting';
+  return 'active-round-banner--setup';
+});
+
 const activeRoundDescription = computed(() => {
   if (final.value.round?.status === 'OPEN') {
     return 'Please submit your ratings for every Final Round criterion.';
@@ -251,18 +262,87 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 1.75rem 2rem;
-  background: linear-gradient(135deg, var(--surface) 0%, var(--gold-soft) 100%);
+  overflow: hidden;
+  --judge-banner-title: #ffffff;
+  --judge-banner-description: #dbeafe;
+  --judge-banner-eyebrow: #fde68a;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #10233f 0%, #263a63 58%, #6b4a16 100%);
+  box-shadow: var(--judge-banner-shadow);
+}
+
+.active-round-banner::after {
+  content: '';
+  position: absolute;
+  top: -105px;
+  right: -72px;
+  width: 235px;
+  height: 235px;
+  border: 38px solid rgba(255, 255, 255, 0.065);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.active-round-banner--round-one {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, #047857 0%, #059669 52%, #0f766e 100%);
+}
+
+.active-round-banner--final {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, #4338ca 0%, #7c3aed 54%, #be185d 100%);
+}
+
+.active-round-banner--waiting {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, #1d4ed8 0%, #4f46e5 54%, #7e22ce 100%);
+}
+
+.active-round-banner--setup {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(229, 193, 88, 0.2), transparent 30%),
+    linear-gradient(135deg, #10233f 0%, #243b61 58%, #694b19 100%);
+}
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.banner-cta {
+  position: relative;
+  z-index: 1;
+}
+
+.banner-content .eyebrow .app-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+}
+
+.banner-content .eyebrow {
+  color: var(--judge-banner-eyebrow);
 }
 
 .banner-content h2 {
+  color: var(--judge-banner-title);
   font-size: 1.5rem;
   font-weight: 900;
   margin: 0.25rem 0 0.4rem;
 }
 
 .banner-desc {
-  color: var(--text-muted);
+  color: var(--judge-banner-description);
   font-size: 0.92rem;
+}
+
+.active-round-banner .btn-gold {
+  color: var(--judge-banner-button-text);
+  background: var(--judge-banner-button-bg);
 }
 
 .judge-metric-grid {
@@ -274,18 +354,93 @@ onMounted(() => {
   min-height: 116px;
   padding: 1rem;
   border-radius: var(--radius-md);
+  isolation: isolate;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(4, 10, 24, 0.2);
+  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+}
+
+.judge-metric-grid :deep(.summary-card)::before {
+  z-index: 0;
+  height: 100%;
+  background:
+    radial-gradient(circle at 92% 16%, rgba(255, 255, 255, 0.2), transparent 26%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.1), transparent 48%);
+}
+
+.judge-metric-grid :deep(.summary-card)::after {
+  content: '';
+  position: absolute;
+  right: -38px;
+  bottom: -58px;
+  z-index: 0;
+  width: 124px;
+  height: 124px;
+  border: 18px solid rgba(255, 255, 255, 0.09);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.judge-metric-grid :deep(.metric-card--round-one) {
+  background: linear-gradient(135deg, #4338ca 0%, #7c3aed 58%, #a21caf 100%);
+}
+
+.judge-metric-grid :deep(.metric-card--candidates) {
+  background: linear-gradient(135deg, #047857 0%, #059669 58%, #15803d 100%);
+}
+
+.judge-metric-grid :deep(.metric-card--progress) {
+  background: linear-gradient(135deg, #db2777 0%, #f43f5e 52%, #f97316 100%);
+}
+
+.judge-metric-grid :deep(.metric-card--final) {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 58%, #4f46e5 100%);
+}
+
+.judge-metric-grid :deep(.summary-card:hover) {
+  filter: saturate(1.08);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(4, 10, 24, 0.3);
 }
 
 .judge-metric-grid :deep(.summary-card p) {
+  position: relative;
+  z-index: 1;
+  padding-right: 2.5rem;
+  color: rgba(255, 255, 255, 0.78);
   font-size: 0.68rem;
 }
 
 .judge-metric-grid :deep(.summary-card strong) {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
   font-size: clamp(1.25rem, 7vw, 1.8rem);
 }
 
 .judge-metric-grid :deep(.summary-card .card-meta) {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.86);
   font-size: 0.72rem;
+}
+
+.metric-card-icon {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 1;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0.28rem;
+  box-sizing: content-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
 }
 
 .judge-criteria-panel {

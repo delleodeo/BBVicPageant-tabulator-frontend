@@ -19,11 +19,11 @@ defineProps({
 });
 
 const items = [
-  { label: 'Dashboard', short: 'Home', to: '/admin/dashboard', icon: 'dashboard' },
+  { label: 'Dashboard', short: 'Home', to: '/admin/dashboard', icon: 'hub' },
   { label: 'Live Matrix', short: 'Matrix', to: '/admin/dashboard#matrix', icon: 'matrix' },
   { label: 'Contestants', short: 'People', to: '/admin/contestants', icon: 'contestants' },
   { label: 'Judges', short: 'Judges', to: '/admin/judges', icon: 'judges' },
-  { label: 'Round 1 Results', short: 'R1', to: '/admin/round-one', icon: 'roundOne' },
+  { label: 'Round 1 Results', short: 'R1', to: '/admin/round-one', icon: 'scoreSheet' },
   { label: 'Special Awards', short: 'Awards', to: '/admin/special-awards', icon: 'awards' },
   { label: 'Top 5 Finalists', short: 'Top 5', to: '/admin/finalists', icon: 'finalists' },
   { label: 'Final Round', short: 'Final', to: '/admin/final-round', icon: 'finalRound' },

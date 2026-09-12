@@ -19,9 +19,9 @@ defineProps({
 });
 
 const items = [
-  { label: 'Judge Hub', short: 'Hub', to: '/judge/dashboard', icon: 'scoreSheet' },
-  { label: 'Score Round 1', short: 'R1', to: '/judge/round-one', icon: 'roundOne' },
-  { label: 'Score Final Round', short: 'Final', to: '/judge/final', icon: 'finalists' },
+  { label: 'Judge Hub', short: 'Hub', to: '/judge/dashboard', icon: 'hub' },
+  { label: 'Score Round 1', short: 'Round 1', to: '/judge/round-one', icon: 'scoreSheet' },
+  { label: 'Score Final Round', short: 'Final', to: '/judge/final', icon: 'finalRound' },
   { label: 'My Profile', short: 'Profile', to: '/judge/profile', icon: 'profile' }
 ];
 </script>

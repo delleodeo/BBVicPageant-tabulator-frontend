@@ -1,7 +1,7 @@
 <template>
   <JudgeLayout title="Final Round Scoring">
     <!-- Progress Panel -->
-    <section class="panel panel-gold">
+    <section class="panel panel-gold judge-progress-panel judge-progress-panel--final">
       <div class="section-head">
         <div>
           <h2>Top 5 Finalists</h2>
