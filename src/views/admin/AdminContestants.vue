@@ -416,9 +416,13 @@ async function save() {
 }
 
 async function remove(c) {
-  if (!confirm(`Are you sure you want to delete candidate #${c.contestantNumber} ${c.name}?`)) return;
-  await api.delete(`/contestants/${c._id}`);
-  await load();
+  if (!confirm(`Delete candidate #${c.contestantNumber} ${c.name}? Their app-uploaded Cloudinary photo will also be deleted if no other candidate uses it.`)) return;
+  try {
+    await api.delete(`/contestants/${c._id}`);
+    await load();
+  } catch (err) {
+    alert(err.response?.data?.message || 'Unable to delete candidate.');
+  }
 }
 
 async function processBulkImport() {
