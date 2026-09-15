@@ -12,6 +12,7 @@ export const finalCategories = [
 ];
 
 export function validScore(value) {
+  if (value === '' || value === null || value === undefined) return false;
   const numberValue = Number(value);
   return Number.isFinite(numberValue) && numberValue >= 0 && numberValue <= 10 && Math.abs(numberValue * 10 - Math.round(numberValue * 10)) < 0.000001;
 }
@@ -19,4 +20,3 @@ export function validScore(value) {
 export function fmt(value) {
   return value === null || value === undefined || value === '' ? '-' : Number(value).toFixed(2);
 }
-

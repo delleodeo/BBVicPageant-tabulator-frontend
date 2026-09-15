@@ -97,7 +97,7 @@
           :key="category.key"
           :category="category"
           :current-value="score?.[category.key]"
-          :disabled="round?.status !== 'OPEN'"
+          :disabled="round?.status !== 'OPEN' || category.locked === true"
           :save-state="scoreSaveStates[category.key]"
           @save="save"
           @invalid="showError"
@@ -418,6 +418,7 @@ async function saveNote() {
 onMounted(() => {
   window.addEventListener(SCORE_OUTBOX_EVENT, handleScoreOutboxEvent);
   connectSocket().on('criteria:updated', load);
+  connectSocket().on('scores:reset', load);
   load();
 });
 
@@ -426,6 +427,7 @@ onBeforeUnmount(() => {
   if (messageTimer) window.clearTimeout(messageTimer);
   const socket = connectSocket();
   socket.off('criteria:updated', load);
+  socket.off('scores:reset', load);
   socket.emit('judge:activity', {
     contestantId: null,
     round: null

@@ -161,8 +161,59 @@
             Reset Demo Data
           </button>
         </div>
+
+        <div class="backup-tool-card score-reset-card">
+          <div class="tool-icon danger"><AppIcon name="trash" /></div>
+          <div>
+            <h4>Reset All Judge Scores</h4>
+            <p style="font-size: 0.84rem; color: var(--text-muted);">
+              Deletes every score, reopens Round 1, clears generated finalists, and returns the Final Round to setup.
+            </p>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" @click="openScoreReset">
+            <AppIcon name="trash" />
+            Reset All Scores
+          </button>
+        </div>
       </div>
     </section>
+
+    <Modal :open="scoreResetOpen">
+      <div class="score-reset-dialog" role="dialog" aria-modal="true" aria-labelledby="score-reset-title">
+        <div class="reset-dialog-icon"><AppIcon name="warning" /></div>
+        <div>
+          <span class="eyebrow">Permanent Action</span>
+          <h2 id="score-reset-title">Reset All Judge Scores?</h2>
+          <p>
+            This cannot be undone. It deletes every Round 1 and Final Round score, removes the generated finalist roster, reopens Round 1, and locks Final Round scoring until Round 1 is completed again. Contestants, judges, settings, and audit history are preserved.
+          </p>
+        </div>
+
+        <label class="confirmation-field">
+          Type <code>tabulation</code> to confirm
+          <input
+            v-model="scoreResetConfirmation"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            placeholder="Type tabulation"
+            @input="scoreResetError = ''"
+            @keyup.enter="resetAllJudgeScores"
+          />
+        </label>
+        <p v-if="scoreResetError" class="error-text">{{ scoreResetError }}</p>
+
+        <div class="button-row reset-dialog-actions">
+          <button type="button" class="btn btn-ghost" :disabled="resettingScores" @click="closeScoreReset">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" :disabled="!canResetScores || resettingScores" @click="resetAllJudgeScores">
+            <AppIcon name="trash" />
+            {{ resettingScores ? 'Resetting Scores...' : 'Permanently Reset Scores' }}
+          </button>
+        </div>
+      </div>
+    </Modal>
 
     <Toast :message="message" />
   </AdminLayout>
@@ -171,6 +222,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import AppIcon from '../../components/AppIcon.vue';
+import Modal from '../../components/Modal.vue';
 import Toast from '../../components/Toast.vue';
 import AdminLayout from '../../layouts/AdminLayout.vue';
 import { api } from '../../services/api.js';
@@ -178,6 +230,11 @@ import { finalCategories, roundOneCategories } from '../../utils/score.js';
 
 const message = ref('');
 const saving = ref(false);
+const scoreResetOpen = ref(false);
+const scoreResetConfirmation = ref('');
+const scoreResetError = ref('');
+const resettingScores = ref(false);
+const canResetScores = computed(() => scoreResetConfirmation.value === 'tabulation');
 let criterionSequence = 0;
 const protectedKeys = {
   roundOneCategories: new Set(roundOneCategories.map(({ key }) => key)),
@@ -274,6 +331,43 @@ async function resetDemoData() {
     setTimeout(() => (message.value = ''), 2500);
   } catch (err) {
     alert(err.response?.data?.message || 'Failed to reset demo data.');
+  }
+}
+
+function openScoreReset() {
+  scoreResetConfirmation.value = '';
+  scoreResetError.value = '';
+  scoreResetOpen.value = true;
+}
+
+function closeScoreReset() {
+  if (resettingScores.value) return;
+  scoreResetOpen.value = false;
+  scoreResetConfirmation.value = '';
+  scoreResetError.value = '';
+}
+
+async function resetAllJudgeScores() {
+  if (!canResetScores.value || resettingScores.value) {
+    scoreResetError.value = 'Type "tabulation" exactly to continue.';
+    return;
+  }
+
+  resettingScores.value = true;
+  scoreResetError.value = '';
+  try {
+    const { data } = await api.post('/admin/system/reset-scores', {
+      confirmation: scoreResetConfirmation.value
+    });
+    scoreResetOpen.value = false;
+    scoreResetConfirmation.value = '';
+    const total = data.deletedScores?.total || 0;
+    message.value = `${total} judge score record${total === 1 ? '' : 's'} reset. Round 1 reopened and the Final Round returned to setup.`;
+    setTimeout(() => (message.value = ''), 3500);
+  } catch (err) {
+    scoreResetError.value = err.response?.data?.message || 'Unable to reset judge scores.';
+  } finally {
+    resettingScores.value = false;
   }
 }
 </script>
@@ -430,6 +524,69 @@ async function resetDemoData() {
 .tool-icon .app-icon {
   width: 1.8rem;
   height: 1.8rem;
+}
+
+.tool-icon.danger {
+  color: var(--danger);
+}
+
+.score-reset-card {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--danger) 6%, var(--surface-hover)), var(--surface-hover));
+}
+
+.score-reset-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reset-dialog-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.reset-dialog-icon .app-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.score-reset-dialog h2 {
+  margin: 0.25rem 0 0.4rem;
+  font-size: 1.35rem;
+}
+
+.score-reset-dialog p {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.confirmation-field code {
+  padding: 0.12rem 0.35rem;
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  background: var(--danger-soft);
+  font-weight: 900;
+}
+
+.confirmation-field input {
+  margin-top: 0.35rem;
+}
+
+.reset-dialog-actions {
+  justify-content: flex-end;
+}
+
+.score-reset-dialog .error-text {
+  color: var(--danger);
+  font-weight: 700;
 }
 
 .backup-tool-card h4 {

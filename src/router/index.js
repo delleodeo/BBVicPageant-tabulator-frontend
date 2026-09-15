@@ -10,6 +10,7 @@ import AdminRoundOne from '../views/admin/AdminRoundOne.vue';
 import AdminSettings from '../views/admin/AdminSettings.vue';
 import AdminSpecialAwards from '../views/admin/AdminSpecialAwards.vue';
 import LoginView from '../views/auth/LoginView.vue';
+import JudgeCategoryScore from '../views/judge/JudgeCategoryScore.vue';
 import JudgeDashboard from '../views/judge/JudgeDashboard.vue';
 import JudgeFinal from '../views/judge/JudgeFinal.vue';
 import JudgeFinalScore from '../views/judge/JudgeFinalScore.vue';
@@ -33,8 +34,20 @@ const routes = [
   { path: '/admin/settings', component: AdminSettings, meta: { role: 'admin' } },
   { path: '/judge/dashboard', component: JudgeDashboard, meta: { role: 'judge' } },
   { path: '/judge/round-one', component: JudgeRoundOne, meta: { role: 'judge' } },
+  {
+    path: '/judge/round-one/category/:categoryId',
+    component: JudgeCategoryScore,
+    props: { roundKind: 'ROUND_1' },
+    meta: { role: 'judge' }
+  },
   { path: '/judge/round-one/:contestantId', component: JudgeRoundOneScore, meta: { role: 'judge' } },
   { path: '/judge/final', component: JudgeFinal, meta: { role: 'judge' } },
+  {
+    path: '/judge/final/category/:categoryId',
+    component: JudgeCategoryScore,
+    props: { roundKind: 'FINAL' },
+    meta: { role: 'judge' }
+  },
   { path: '/judge/final/:contestantId', component: JudgeFinalScore, meta: { role: 'judge' } },
   { path: '/judge/profile', component: JudgeProfile, meta: { role: 'judge' } }
 ];

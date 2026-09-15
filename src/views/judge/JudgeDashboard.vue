@@ -68,7 +68,7 @@
     </section>
 
     <!-- Round 1 Criteria Overview & Shortcut List -->
-    <section class="panel judge-criteria-panel">
+    <section id="round-one-categories" class="panel judge-criteria-panel">
       <div class="section-head judge-section-head">
         <div>
           <h2>Round 1 Criteria & Weights</h2>
@@ -81,18 +81,23 @@
       </div>
 
       <div class="criteria-cards-grid">
-        <div v-for="cat in roundOneCategories" :key="cat.key" class="criteria-pill-card">
+        <RouterLink
+          v-for="cat in roundOneCategories"
+          :key="cat.key"
+          class="criteria-pill-card criteria-pill-link"
+          :to="`/judge/round-one/category/${encodeURIComponent(cat.key)}`"
+        >
           <div class="crit-weight">{{ cat.weight }}%</div>
           <div class="crit-info">
             <span class="crit-label">{{ cat.label }}</span>
-            <span class="crit-sub">Score range: 0.0 - 10.0</span>
+            <span class="crit-sub">Open category · Score range: 0.0–10.0</span>
           </div>
-        </div>
+        </RouterLink>
       </div>
     </section>
 
     <!-- Final Round Criteria Overview -->
-    <section class="panel judge-criteria-panel">
+    <section id="final-categories" class="panel judge-criteria-panel">
       <div class="section-head judge-section-head">
         <div>
           <h2>Final Round Criteria</h2>
@@ -116,13 +121,18 @@
             <span class="crit-sub">Transferred automatically from locked R1</span>
           </div>
         </div>
-        <div v-for="cat in finalCategories" :key="cat.key" class="criteria-pill-card">
+        <RouterLink
+          v-for="cat in finalCategories"
+          :key="cat.key"
+          class="criteria-pill-card criteria-pill-link"
+          :to="`/judge/final/category/${encodeURIComponent(cat.key)}`"
+        >
           <div class="crit-weight">{{ cat.weight }}%</div>
           <div class="crit-info">
             <span class="crit-label">{{ cat.label }}</span>
-            <span class="crit-sub">Score range: 0.0 - 10.0</span>
+            <span class="crit-sub">Open category · Score range: 0.0–10.0</span>
           </div>
-        </div>
+        </RouterLink>
       </div>
     </section>
   </JudgeLayout>
@@ -166,45 +176,48 @@ const roundOneStatusMeta = computed(() => {
   return 'Waiting for setup';
 });
 
-const nextPendingRoundOneContestant = computed(() => {
-  return (roundOne.value.contestants || []).find((contestant) => {
-    const score = (roundOne.value.scores || []).find(
-      (entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestant._id)
-    );
-    return !roundOneCategories.value.every((category) => score?.[category.key] !== undefined && score?.[category.key] !== null);
-  });
-});
-
-const nextPendingFinalist = computed(() => {
-  return (final.value.finalists || []).find((finalist) => {
-    const contestantId = finalist.contestantId?._id || finalist.contestantId;
-    const score = (final.value.scores || []).find(
+function categoryHasPending(roster, scores, categoryKey) {
+  return roster.some((contestant) => {
+    const contestantId = contestant?._id || contestant;
+    const score = scores.find(
       (entry) => String(entry.contestantId?._id || entry.contestantId) === String(contestantId)
     );
-    return !finalCategories.value.every((category) => score?.[category.key] != null);
+    return score?.[categoryKey] === undefined || score?.[categoryKey] === null;
   });
-});
+}
+
+const nextPendingRoundOneCategory = computed(() => roundOneCategories.value.find((category) =>
+  category.locked !== true && categoryHasPending(roundOne.value.contestants || [], roundOne.value.scores || [], category.key)
+));
+
+const nextPendingFinalCategory = computed(() => finalCategories.value.find((category) =>
+  category.locked !== true && categoryHasPending(
+    (final.value.finalists || []).map((finalist) => finalist.contestantId).filter(Boolean),
+    final.value.scores || [],
+    category.key
+  )
+));
 
 const nextAction = computed(() => {
-  if (roundOne.value.round?.status === 'OPEN' && nextPendingRoundOneContestant.value?._id) {
+  if (roundOne.value.round?.status === 'OPEN' && nextPendingRoundOneCategory.value) {
     return {
       icon: 'scoreSheet',
       eyebrow: 'Continue Round 1',
-      title: `Candidate #${nextPendingRoundOneContestant.value.contestantNumber}`,
-      description: 'Resume at the next candidate with incomplete category scores.',
+      title: nextPendingRoundOneCategory.value.label,
+      description: 'Continue grading the remaining candidates in this category.',
       cta: 'Continue Scoring',
-      to: `/judge/round-one/${nextPendingRoundOneContestant.value._id}`
+      to: `/judge/round-one/category/${encodeURIComponent(nextPendingRoundOneCategory.value.key)}`
     };
   }
 
-  if (final.value.round?.status === 'OPEN' && nextPendingFinalist.value?.contestantId?._id) {
+  if (final.value.round?.status === 'OPEN' && nextPendingFinalCategory.value) {
     return {
       icon: 'finalists',
       eyebrow: 'Continue Final Round',
-      title: `Finalist #${nextPendingFinalist.value.contestantId.contestantNumber}`,
-      description: 'Finish the remaining Final Round criteria for the next finalist.',
+      title: nextPendingFinalCategory.value.label,
+      description: 'Continue grading the remaining finalists in this category.',
       cta: 'Continue Finals',
-      to: `/judge/final/${nextPendingFinalist.value.contestantId._id}`
+      to: `/judge/final/category/${encodeURIComponent(nextPendingFinalCategory.value.key)}`
     };
   }
 
@@ -251,6 +264,7 @@ onMounted(() => {
   socket.on('round:locked', load);
   socket.on('finalists:generated', load);
   socket.on('criteria:updated', load);
+  socket.on('scores:reset', load);
 });
 </script>
 
@@ -520,6 +534,19 @@ onMounted(() => {
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+}
+
+.criteria-pill-link {
+  color: inherit;
+  text-decoration: none;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.criteria-pill-link:hover,
+.criteria-pill-link:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: var(--shadow-sm);
 }
 
 .crit-weight {
