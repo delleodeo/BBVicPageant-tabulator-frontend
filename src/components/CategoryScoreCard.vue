@@ -5,7 +5,7 @@
     :aria-busy="saving"
   >
     <div class="score-card-header">
-      <div>
+      <div class="score-card-title-wrap">
         <h3 class="score-card-title">{{ category.label }}</h3>
         <span class="score-card-weight">Weight: {{ category.weight }}%</span>
       </div>
@@ -16,12 +16,24 @@
       </div>
     </div>
 
-    <!-- Quick Score Dial -->
-    <QuickScoreDial
-      v-model="localValue"
-      :disabled="disabled || saving"
-      @change="handleScoreChange"
-    />
+    <!-- Simple Score Input -->
+    <div class="simple-score-input">
+      <div class="input-display">
+        <input
+          v-model="localValue"
+          type="number"
+          min="0"
+          max="10"
+          step="0.1"
+          inputmode="decimal"
+          :disabled="disabled || saving"
+          placeholder="0.0"
+          class="score-decimal-input"
+          @input="handleScoreChange(Number($event.target.value))"
+        />
+        <span class="max-denom">/ 10.0</span>
+      </div>
+    </div>
 
     <div class="score-card-footer">
       <div class="score-status-row">
@@ -39,19 +51,19 @@
       </div>
 
       <button
-        class="btn btn-primary full"
+        class="btn btn-primary full save-btn"
         type="button"
         :disabled="disabled || saving || (!isDirty && !canRetry)"
         @click="save"
       >
         <AppIcon :name="buttonIcon" :class="{ 'saving-spinner': saving }" />
         <span v-if="saving">Saving...</span>
-        <span v-else-if="disabled">Scoring Locked</span>
-        <span v-else-if="isDirty">Save {{ category.label }} Score</span>
-        <span v-else-if="failed">Retry Save</span>
-        <span v-else-if="queued">Retry Now</span>
-        <span v-else-if="isSaved">Saved ({{ Number(localValue).toFixed(1) }})</span>
-        <span v-else>Choose Score</span>
+        <span v-else-if="disabled">Locked</span>
+        <span v-else-if="isDirty">Save Score</span>
+        <span v-else-if="failed">Retry</span>
+        <span v-else-if="queued">Retry</span>
+        <span v-else-if="isSaved">Saved ✓</span>
+        <span v-else>Enter Score</span>
       </button>
     </div>
   </article>
@@ -60,7 +72,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import AppIcon from './AppIcon.vue';
-import QuickScoreDial from './QuickScoreDial.vue';
 import { validScore } from '../utils/score.js';
 
 const emit = defineEmits(['save', 'invalid']);
@@ -147,19 +158,19 @@ function save() {
 }
 
 .score-card-header {
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .score-card-title {
-  font-size: clamp(1rem, 4.5vw, 1.15rem);
-  line-height: 1.18;
+  font-size: clamp(0.95rem, 4vw, 1.1rem);
+  line-height: 1.2;
   letter-spacing: 0;
 }
 
 .score-card-weight {
   display: inline-flex;
-  margin-top: 0.3rem;
-  font-size: 0.72rem;
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
   line-height: 1;
 }
 
@@ -190,20 +201,20 @@ function save() {
 .score-card-footer {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   margin-top: auto;
 }
 
 .score-status-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .status-indicator {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
 }
@@ -238,5 +249,63 @@ function save() {
 .score-card .btn .app-icon {
   width: 1rem;
   height: 1rem;
+}
+
+.simple-score-input {
+  display: flex;
+  justify-content: center;
+}
+
+.input-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--surface-hover);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 180px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-display:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+.score-decimal-input {
+  width: 80px;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
+  font-size: clamp(1.6rem, 8vw, 2rem);
+  font-weight: 900;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.score-decimal-input:focus {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.max-denom {
+  font-size: clamp(0.85rem, 4vw, 1rem);
+  font-weight: 800;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.save-btn {
+  min-height: 44px;
+  font-size: 0.85rem;
+  font-weight: 800;
 }
 </style>

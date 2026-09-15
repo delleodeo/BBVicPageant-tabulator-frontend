@@ -439,7 +439,7 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(8px);
 }
 

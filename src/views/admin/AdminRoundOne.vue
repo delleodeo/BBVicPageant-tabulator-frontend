@@ -54,8 +54,8 @@
       <div class="tie-banner-content">
         <span class="tie-icon"><AppIcon name="warning" /></span>
         <div>
-          <strong style="color: #b45309; font-size: 1.05rem;">Tie Detected at Finalist Cutoff Rank 5</strong>
-          <p style="font-size: 0.85rem; color: #78350f; margin-top: 0.2rem;">
+          <strong style="color: var(--gold-dark); font-size: 1.05rem;">Tie Detected at Finalist Cutoff Rank 5</strong>
+          <p style="font-size: 0.85rem; color: var(--gold-dark); margin-top: 0.2rem;">
             The following delegates share the cutoff total score of {{ tieInfo.tiedScore }} pts:
             <span v-for="c in tieInfo.tiedContestants" :key="c.contestant._id" style="font-weight: 800; margin-left: 0.5rem;">
               #{{ c.contestant.contestantNumber }} {{ c.contestant.name }}
@@ -326,7 +326,7 @@ onMounted(async () => {
 }
 
 .panel-warning {
-  background: #fffbeb;
+  background: var(--warning-soft);
   border-color: #fde68a;
 }
 
@@ -355,7 +355,7 @@ onMounted(async () => {
 
 .btn-warning {
   background: #f59e0b;
-  color: #1c1403;
+  color: var(--text-main);
   border: none;
   font-weight: 700;
 }

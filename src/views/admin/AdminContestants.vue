@@ -580,7 +580,7 @@ onMounted(load);
 
 .filter-chip.active {
   background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-  color: #fff;
+  color: #ffffff;
   border-color: var(--gold-dark);
 }
 
@@ -713,13 +713,13 @@ onMounted(load);
 
 .candidate-status-inline.warning {
   background: var(--warning-soft);
-  color: #b45309;
+  color: var(--gold-dark);
   border-color: rgba(245, 158, 11, 0.28);
 }
 
 [data-theme='dark'] .candidate-status-inline.warning {
   background: rgba(245, 158, 11, 0.14);
-  color: #fbbf24;
+  color: var(--gold-light);
   border-color: rgba(245, 158, 11, 0.35);
 }
 
@@ -801,7 +801,7 @@ onMounted(load);
 
 [data-theme='dark'] .c-advocacy-snippet {
   background: rgba(255, 255, 255, 0.035);
-  color: #cbd5e1;
+  color: var(--text-muted);
 }
 
 .form-row-2 {

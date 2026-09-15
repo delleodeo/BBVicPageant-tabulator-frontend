@@ -575,14 +575,14 @@ onMounted(() => {
     min-height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
-    background: #fff !important;
+    background: var(--surface) !important;
   }
 
   .awards-print-summary {
     display: block;
     width: 100%;
-    color: #111827;
-    background: #fff;
+    color: var(--text-main);
+    background: var(--surface);
     font-family: 'Plus Jakarta Sans', Arial, sans-serif;
     font-size: 9pt;
     line-height: 1.35;
@@ -601,7 +601,7 @@ onMounted(() => {
   .print-awards-header p {
     grid-column: 1 / -1;
     margin: 0;
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 7.5pt;
     font-weight: 700;
     text-transform: uppercase;
@@ -609,7 +609,7 @@ onMounted(() => {
 
   .print-awards-header h1 {
     margin: 0;
-    color: #0f172a;
+    color: var(--text-main);
     font-size: 18pt;
     font-weight: 900;
     line-height: 1.05;
@@ -639,14 +639,14 @@ onMounted(() => {
 
   .print-section-title h2 {
     margin: 0;
-    color: #0f172a;
+    color: var(--text-main);
     font-size: 12pt;
     font-weight: 900;
   }
 
   .print-section-title p {
     margin: 0;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 8pt;
     font-weight: 700;
   }
@@ -663,7 +663,7 @@ onMounted(() => {
     padding: 2.4mm 2.8mm;
     border: 1px solid #cbd5e1;
     vertical-align: top;
-    color: #111827;
+    color: var(--text-main);
     overflow-wrap: anywhere;
   }
 
@@ -683,14 +683,14 @@ onMounted(() => {
 
   .print-awards-table strong {
     display: block;
-    color: #0f172a;
+    color: var(--text-main);
     font-weight: 900;
   }
 
   .print-awards-table td span {
     display: block;
     margin-top: 0.7mm;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 7.4pt;
     font-weight: 700;
   }
@@ -750,7 +750,7 @@ onMounted(() => {
   .print-awards-footer strong {
     display: block;
     margin-top: 2mm;
-    color: #111827;
+    color: var(--text-main);
     font-size: 8pt;
     font-weight: 800;
     text-transform: uppercase;

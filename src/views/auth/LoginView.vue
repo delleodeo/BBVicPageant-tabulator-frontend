@@ -1,7 +1,7 @@
 <template>
   <main class="login-page">
     <section class="login-shell" aria-label="Pageant Pro secure login">
-      <div class="login-hero-panel">
+      <div v-if="isDesktop" class="login-hero-panel">
         <div class="brand-lockup">
           <span class="brand-mark">
             <AppIcon name="sparkles" />
@@ -35,11 +35,11 @@
 
       <div class="login-card">
         <div class="login-card-header">
-          <span class="login-card-icon">
+          <span v-if="isDesktop" class="login-card-icon">
             <AppIcon name="lock" />
           </span>
           <div>
-            <p class="eyebrow">Portal Sign In</p>
+            <p v-if="isDesktop" class="eyebrow">Portal Sign In</p>
             <h2>Welcome back</h2>
           </div>
         </div>
@@ -102,6 +102,8 @@ const router = useRouter();
 const error = ref('');
 const showPassword = ref(false);
 const form = reactive({ username: '', password: '' });
+const isDesktop = ref(window.innerWidth >= 900);
+window.addEventListener('resize', () => { isDesktop.value = window.innerWidth >= 900; });
 
 async function submit() {
   error.value = '';
@@ -122,9 +124,7 @@ async function submit() {
   display: grid;
   align-items: stretch;
   padding: 1rem;
-  background:
-    linear-gradient(135deg, rgba(251, 245, 230, 0.9) 0%, rgba(248, 250, 252, 0.72) 44%, rgba(239, 246, 255, 0.9) 100%),
-    var(--bg-page);
+  background: var(--bg-page);
 }
 
 .login-shell {
@@ -138,7 +138,7 @@ async function submit() {
 .login-card {
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--surface);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
