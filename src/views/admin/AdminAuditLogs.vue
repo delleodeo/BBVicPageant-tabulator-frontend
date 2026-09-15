@@ -277,8 +277,8 @@ onMounted(load);
 }
 
 .diff-box {
-  background: #0d1b2a;
-  color: #e2e8f0;
+  background: var(--navy-dark);
+  color: var(--text-muted);
   border-radius: var(--radius-md);
   padding: 1rem;
   overflow-x: auto;

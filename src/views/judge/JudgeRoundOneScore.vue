@@ -606,29 +606,32 @@ onBeforeUnmount(() => {
 
 .score-progress-strip {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
   margin-bottom: 1.25rem;
 }
 
 .score-progress-chip {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 40px;
-  padding: 0.55rem 0.75rem;
+  gap: 0.35rem;
+  min-height: 36px;
+  padding: 0.45rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .score-progress-chip .app-icon {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 1rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 0.9rem;
 }
 
 .score-progress-chip.complete {
@@ -647,9 +650,21 @@ onBeforeUnmount(() => {
 }
 
 .scoring-footer-nav .button-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-content: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scoring-footer-nav .btn {
+  font-size: 0.82rem;
+  padding: 0.55rem 1rem;
+  min-height: 38px;
+}
+
+@media (min-width: 600px) {
+  .score-progress-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (min-width: 720px) {

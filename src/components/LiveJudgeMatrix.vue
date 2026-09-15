@@ -303,21 +303,21 @@ function getContestantCompletionCount(contestantId) {
 }
 
 .state-active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--info-soft);
+  color: var(--info);
   border: 1px solid #93c5fd;
   animation: pulseBg 1.5s infinite;
 }
 
 .state-complete {
-  background: #ecfdf5;
-  color: #059669;
+  background: var(--success-soft);
+  color: var(--success);
   border: 1px solid #a7f3d0;
 }
 
 .state-partial {
-  background: #fffbeb;
-  color: #d97706;
+  background: var(--warning-soft);
+  color: var(--warning);
   border: 1px solid #fde68a;
 }
 
@@ -354,7 +354,7 @@ function getContestantCompletionCount(contestantId) {
 }
 
 @keyframes pulseBg {
-  0%, 100% { background: #eff6ff; }
+  0%, 100% { background: var(--info-soft); }
   50% { background: #dbeafe; }
 }
 </style>
